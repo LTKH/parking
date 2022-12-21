@@ -1,0 +1,3 @@
+# github.com/webview/webview v0.0.0-20221218140943-9db4b8c3e9af
+## explicit; go 1.13
+github.com/webview/webview
