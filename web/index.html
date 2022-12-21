@@ -1,0 +1,79 @@
+
+<!doctype html>
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <title>Sticky Footer Navbar Template · Bootstrap v5.2</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+  </head>
+  <body class="d-flex flex-column h-100">
+    
+    <header>
+      <!-- Fixed navbar -->
+      <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-0 mb-md-0" id="pills-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="pills-parking-tab" data-bs-toggle="pill" data-bs-target="#pills-parking">Автостоянка</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Отчеты</a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="pills-revenue-tab" data-bs-toggle="pill" data-bs-target="#pills-revenue">Выручка кассы</a></li>
+                    <li><a class="dropdown-item" href="#" id="pills-debtors-tab" data-bs-toggle="pill" data-bs-target="#pills-debtors">Должники автостоянки</a></li>
+                    <li><a class="dropdown-item" href="#" id="pills-cars-tab" data-bs-toggle="pill" data-bs-target="#pills-cars">Сведения ТС</a></li>
+                    <li><a class="dropdown-item" href="#" id="pills-places-tab" data-bs-toggle="pill" data-bs-target="#pills-places">Отчет о занятости мест</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Справочники</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" id="pills-information-tab" data-bs-toggle="pill" data-bs-target="#pills-information">Справочник основных сведений</a></li>
+                  <li><a class="dropdown-item" href="#" id="pills-inf-rates-tab" data-bs-toggle="pill" data-bs-target="#pills-inf-rates">Справочник расценок</a></li>
+                  <li><a class="dropdown-item" href="#" id="pills-inf-places-tab" data-bs-toggle="pill" data-bs-target="#pills-inf-places">Справочник мест</a></li>
+                  <li><a class="dropdown-item" href="#" id="pills-inf-users-tab" data-bs-toggle="pill" data-bs-target="#pills-inf-users">Справочник пользователей</a></li>
+                  <li><a class="dropdown-item" href="#" id="pills-inf-cars-tab" data-bs-toggle="pill" data-bs-target="#pills-inf-cars">Справочник автомобилей</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <div class="tab-content" id="pills-tabContent">
+      <div class="tab-pane fade show active" id="pills-parking" role="tabpanel" aria-labelledby="pills-parking-tab" tabindex="0">parking</div>
+      <div class="tab-pane fade" id="pills-revenue" role="tabpanel" aria-labelledby="pills-revenue-tab" tabindex="0">revenue</div>
+      <div class="tab-pane fade" id="pills-debtors" role="tabpanel" aria-labelledby="pills-debtors-tab" tabindex="0">debtors</div>
+      <div class="tab-pane fade" id="pills-cars" role="tabpanel" aria-labelledby="pills-cars-tab" tabindex="0">cars</div>
+      <div class="tab-pane fade" id="pills-places" role="tabpanel" aria-labelledby="pills-places-tab" tabindex="0">places</div>
+      <div class="tab-pane fade" id="pills-information" role="tabpanel" aria-labelledby="pills-information-tab" tabindex="0">information</div>
+      <div class="tab-pane fade" id="pills-inf-rates" role="tabpanel" aria-labelledby="pills-inf-rates-tab" tabindex="0">inf-rates</div>
+      <div class="tab-pane fade" id="pills-inf-places" role="tabpanel" aria-labelledby="pills-inf-places-tab" tabindex="0">inf-places</div>
+      <div class="tab-pane fade" id="pills-inf-users" role="tabpanel" aria-labelledby="pills-inf-users-tab" tabindex="0">inf-users</div>
+      <div class="tab-pane fade" id="pills-inf-cars" role="tabpanel" aria-labelledby="pills-inf-cars-tab" tabindex="0">inf-cars</div>
+    </div>
+
+    <!-- Begin page content -->
+    <main class="flex-shrink-0">
+      <div class="container">
+        <h1 class="mt-5">Sticky footer with fixed navbar</h1>
+        <p class="lead">Pin a footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code class="small">padding-top: 60px;</code> on the <code class="small">main &gt; .container</code>.</p>
+        <p>Back to <a href="/docs/5.2/examples/sticky-footer/">the default sticky footer</a> minus the navbar.</p>
+      </div>
+    </main>
+
+    <footer class="footer mt-auto py-3 bg-light">
+      <div class="container">
+        <span class="text-muted">Place sticky footer content here.</span>
+      </div>
+    </footer>
+
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+
+      
+  </body>
+</html>
