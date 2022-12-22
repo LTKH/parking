@@ -1,4 +1,4 @@
-module ltkh/parking
+module github.com/ltkh/parking
 
 go 1.19
 
