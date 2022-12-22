@@ -21,7 +21,7 @@ jobs:
           go-version: '1.19.2'
       - run: GOOS=windows GOARCH=amd64 go build -v --mod=vendor -o /build/parking-windows-amd64.exe ./
       - name: Create Release
-        uses: actions/create-release@v0.0.1
+        uses: actions/create-release@v0.0.6
         id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload Release Assets
-        uses: glentiki/xbin-release-action@v0.0.1
+        uses: glentiki/xbin-release-action@v0.0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
