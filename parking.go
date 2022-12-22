@@ -3,10 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	//"github.com/webview/webview"
-	//"github.com/virteman/webview"
-	//"github.com/zserge/webview"
-	"github.com/NiuStar/webview"
+	"github.com/webview/webview"
 )
 
 func main() {
@@ -20,21 +17,10 @@ func main() {
 		}
 	}()
 
-	//w := webview.New(true)
-	//defer w.Destroy()
-	//w.ClearCache()
-	//w.SetTitle("Parking")
-	//w.SetSize(1400, 1000, webview.HintNone)
-	//w.Navigate("http://localhost:8800/index.html")
-	//w.Run()
-
-	w := webview.New(webview.Settings{
-		Width:  800,
-		Height: 600,
-		Title:  "Simple canvas demo",
-		URL:    "http://localhost:8800/index.html",
-	})
-	defer w.Exit()
-	//
+	w := webview.New(true)
+	defer w.Destroy()
+	w.SetTitle("Parking")
+	w.SetSize(800, 600, webview.HintNone)
+	w.Navigate("http://localhost:8800/index.html")
 	w.Run()
 }

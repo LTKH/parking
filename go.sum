@@ -1,2 +1,2 @@
-github.com/NiuStar/webview v0.0.0-20180124033843-c9ce1bb09f08 h1:Xz5N0po9cCnCEVLu3CXxy0Wjyvkb0lW/TuOkrmuo/00=
-github.com/NiuStar/webview v0.0.0-20180124033843-c9ce1bb09f08/go.mod h1:3H5BLG6AEO+bxGsaODG8uEnT//RUEJ8tKMuTR5p76YQ=
+github.com/webview/webview v0.0.0-20221220082822-77e021440a0f h1:whomWpMJmyN9uHtIjBIE2jmjN8ZccngNh3kCg4G16FA=
+github.com/webview/webview v0.0.0-20221220082822-77e021440a0f/go.mod h1:rpXAuuHgyEJb6kXcXldlkOjU6y4x+YcASKKXJNUhh0Y=

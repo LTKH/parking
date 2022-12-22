@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go_version: [1.19.x]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -27,7 +27,7 @@ jobs:
           go_version: ${{ matrix.go_version }}
           dest: build
           prefix: parking
-          targets: windows/386,windows/amd64,linux/amd64,darwin/amd64
+          targets: windows/386,windows/amd64
           v: true
           x: false
           ldflags: -s -w
