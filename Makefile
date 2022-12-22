@@ -4,13 +4,13 @@ PROJECTNAME=$(shell basename "$(PWD)")
 GOBASE=$(shell pwd)
 GOFILES=$(wildcard *.go)
 
-GOOS=windows
-GOARCH=amd64
-CGO_ENABLED=1
-CGO_CFLAGS=-D_WIN32_WINNT=0x0400
-CGO_CXXFLAGS=-D_WIN32_WINNT=0x0400
+#CGO_ENABLED=1 
+#CGO_CFLAGS=-D_WIN32_WINNT=0x0400 
+#CGO_CXXFLAGS=-D_WIN32_WINNT=0x0400 
 
 exec:
-	go build -v --mod=vendor '--ldflags=-v -s -w' -o build/parking-windows-amd64.exe ./
+	go get github.com/webview/webview
+	GOOS=windows GOARCH=amd64 go build -o /tmp/parking.exe parking.go
 
 test:
+	go version

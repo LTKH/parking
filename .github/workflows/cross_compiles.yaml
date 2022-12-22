@@ -11,7 +11,7 @@ on:
 
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: windows-2019
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,8 +19,10 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.19.2'
-      - run: go get github.com/webview/webview
-      - run: GOOS=windows GOARCH=amd64 go build parking.go -o /tmp/parking-windows-amd64.exe 
+      - run: mkdir libs\webview2
+      - run: curl -sSL "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2" | tar -xf - -C libs\webview2
+      - run: copy /Y libs\webview2\build\native\x64\WebView2Loader.dll build
+      - run: go build -o /tmp/parking-windows-amd64.exe parking.go
       #- name: Create Release
       #  uses: actions/create-release@v0.0.6
       #  id: create_release
