@@ -15,13 +15,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - run: mkdir libs\webview2
+      - run: curl -sSL "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2" | tar -xf - -C libs\webview2
+      - run: copy /Y libs\webview2\build\native\x64\WebView2Loader.dll build
       - name: Set up Go 1.19
         uses: actions/setup-go@v3
         with:
           go-version: '1.19.2'
-      - run: mkdir libs\webview2
-      - run: curl -sSL "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2" | tar -xf - -C libs\webview2
-      - run: copy /Y libs\webview2\build\native\x64\WebView2Loader.dll build
       - run: go build -o /tmp/parking-windows-amd64.exe parking.go
       #- name: Create Release
       #  uses: actions/create-release@v0.0.6
