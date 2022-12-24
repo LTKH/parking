@@ -19,6 +19,11 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.19.2'
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
       #- run: copy /Y libs\build\native\x64\WebView2Loader.dll WebView2Loader.dll
       - run: go build -o /tmp/parking-windows-amd64.exe parking.go
       #- name: Create Release
