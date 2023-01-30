@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/jquery.gritter.css">
+    <link rel="stylesheet" href="/css/signin.css">
+
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+</head>
+<body class="text-center">
+    
+    <main class="form-signin">
+    <form id="loginForm">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+        <div class="form-floating">
+            <input name="username" type="text" class="form-control" id="floatingInput" placeholder="Login" style="font-size: 12px;">
+            <label for="floatingInput">Login</label>
+        </div>
+        <div class="form-floating">
+            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password" style="font-size: 12px;">
+            <label for="floatingPassword">Password</label>
+        </div>
+
+        <button class="w-100 btn btn-primary" type="submit">Sign in</button>
+        <p class="mt-5 mb-3 text-muted">&copy; parking 2023</p>
+    </form>
+    </main>
+
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-cookie.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.gritter.js"></script>
+    <script>
+        $("#loginForm").submit(function(e) {
+
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+            $.ajax({
+                type: "POST",
+                url: "/api/v1/login",
+                data: $(this).serialize(), // serializes the form's elements.
+                success: function(json) {
+                    $.cookie('login', json.data.login);
+                    $.cookie('token', json.data.token);
+                    window.location.replace("/");
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                    $.gritter.add({
+                        title: 'Authorisation error!',
+                        text: XMLHttpRequest.responseJSON.error,
+                        image: '/images/warning.png',
+                        time: 10000,
+                        class_name: 'my-class'
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

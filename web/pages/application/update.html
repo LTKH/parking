@@ -1,0 +1,56 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+
+                    <div id="console" class="container"></div>
+
+                </div>
+                <!--button type="button" class="btn btn-primary btn-sm mb-3">Update</button-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function connectSocket() {
+        var ws = new WebSocket('ws://localhost:8800/api/v1/ws');
+
+        ws.onopen = function() {
+            console.log('onopen');
+        };
+
+        ws.onmessage = function(evt) {
+            $('#console').append(evt.data+'<br>');
+        };
+
+        ws.onclose = function(e) {
+            console.log('onclose');
+
+            setTimeout(function() {
+                connectSocket();
+            }, 10000);
+        };
+    }
+
+    $(function() {
+        connectSocket();
+
+
+        //$('#update').modal('show'); 
+        //$.ajax({
+        //    url: '/api/v1/update',
+        //}).done(function(html) {
+            //$("#content").html(html);
+        //}).fail(function() { 
+            //window.location.replace("/login.html"); 
+        //});
+    });
+
+  
+
+</script>

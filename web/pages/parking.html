@@ -1,0 +1,355 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                        <!--div class="row">
+                            <div class="col-sm-12 col-md-6">
+                                <div class="dataTables_length" id="data-table-default_length"><label>Show <select name="data-table-default_length" aria-controls="data-table-default" class="custom-select custom-select-sm form-control form-control-sm"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select> entries</label></div>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <div id="data-table-default_filter" class="dataTables_filter"><label>Search:<input type="search" class="form-control form-control-sm" placeholder="" aria-controls="data-table-default"></label></div>
+                            </div>
+                        </div-->
+                        <form id="parking-form" class="row g-3">
+                            <div class="row mb-2">
+                                <div class="text-silver f-w-600 f-s-16"><b>Сведения о автомобиле:</b></div>
+                                <div class="col-sm-9">
+                                    <div class="form-group row">
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Гос. номер:</label>
+                                            <input name="carNumber" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-3 input-group-sm">
+                                            <label class="form-label">Марка:</label>
+                                            <input name="brand" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Цвет:</label>
+                                            <input name="color" type="text" class="form-control" style="font-size: 12px;">
+                                        </div>
+                                        <div class="col-md-5 input-group-sm">
+                                            <label class="form-label">Примечание:</label>
+                                            <input name="note" type="text" class="form-control" style="font-size: 12px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="m-b-2 text-silver f-w-600 f-s-16"><b>Сведения о владельце:</b></div>
+                                <div class="col-sm-9">
+                                    <div class="form-group row">
+                                        <div class="col-md-4 input-group-sm">
+                                            <label class="form-label">ФИО владельца:</label>
+                                            <input name="fullName" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Телефон:</label>
+                                            <input name="telephone" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-4 input-group-sm">
+                                            <label class="form-label">Адрес владельца:</label>
+                                            <input name="address" type="text" class="form-control" style="font-size: 12px;">
+                                        </div>
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Документ владельца:</label>
+                                            <input name="document" type="text" class="form-control" style="font-size: 12px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="m-b-2 text-silver f-w-600 f-s-16"><b>Сведения о оплате:</b></div>
+                                <div class="col-sm-9">
+                                    <div class="form-group row">
+                                        <!--div class="col-md-1 input-group-sm">
+                                            <label class="form-label">№ чека</label>
+                                            <input name="receipt" type="text" class="form-control" style="font-size: 12px;" disabled>
+                                        </div-->
+                                        <div class="col-md-2 input-group-sm date">
+                                            <label class="form-label">Число от:</label>
+                                            <input id="startDate" name="startDate" type="text" class="form-control" autocomplete="off" style="font-size: 12px;" required>
+                                            <!--span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span-->
+                                        </div>
+                                        <div class="col-md-3 input-group-sm">
+                                            <label class="form-label">Вид расценки:</label>
+                                            <!--input name="price" type="text" class="form-control" style="font-size: 12px;"-->
+                                            <select name="price" class="form-select form-select-sm" style="font-size: 12px;">
+                                                <option selected disabled value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-1 input-group-sm">
+                                            <label class="form-label">Дней:</label>
+                                            <input name="days" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Сумма:</label>
+                                            <input name="cost" type="text" class="form-control" style="font-size: 12px;" required>
+                                        </div>
+                                        <div class="col-md-2 input-group-sm">
+                                            <label class="form-label">Место:</label>
+                                            <!--input name="place" type="text" class="form-control" style="font-size: 12px;"-->
+                                            <select name="place" class="form-select form-select-sm" style="font-size: 12px;" required>
+                                                <option selected disabled value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 input-group-sm date">
+                                            <label class="form-label">Действительна до:</label>
+                                            <input id="endDate" name="endDate" type="text" class="form-control" autocomplete="off" style="font-size: 12px;" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="form-group row">
+                                        <div class="col-md-1 input-group-sm">
+                                            <button id="parking-save" type="button" class="btn btn-primary btn-sm mb-3">Сохранить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- end row -->
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="parking" data-height="1000" data-pagination-parts="pageInfo" data-row-style="rowStyle" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- context menu -->
+<ul id="context-menu" class="dropdown-menu" style="font-size: 12px;">
+    <li data-item="exit"><a class="dropdown-item">Выезд автомобиля</a></li>
+    <li data-item="entry"><a class="dropdown-item">Продлить оплату</a></li>
+    <li data-item="print"><a class="dropdown-item">Распечатать чек</a></li>
+    <li data-item="car"><a class="dropdown-item">Сведения об автомобиле</a></li>
+    <li data-item="owner"><a class="dropdown-item">Сведения о владельцах</a></li>
+</ul>  
+
+<script type="text/javascript">
+
+    function rowStyle(row, index) {
+        if (new Date(row.endDate).getTime() > 0 && row.debtor > 0) {
+            return {
+                css: {
+                    color: 'red'
+                }
+            }
+        }
+        return {}
+    }
+
+    function request(url, method, data) {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data)
+        }).done(function(jsn) {
+            if (url == "/api/v1/places" && method == 'GET'){
+                $("select[name='place']").empty();
+                $.each(jsn.data, function(key, value) {
+                    if ($("#parking-form input[name='startDate']").val() != ''){
+                        if (Date.parse(value.endDate) > strToDate($("#parking-form input[name='startDate']").val())) {
+                            return
+                        }
+                    }
+                    $("select[name='place']").append($('<option>', {
+                        value: value.id,
+                        text: value.number,
+                    }));
+                });
+            }
+            if (url == "/api/v1/prices" && method == 'GET'){
+                $("select[name='price']").empty();
+                $("select[name='price']").append($('<option>', { value: '', text: '' }));
+                $.each(jsn.data, function(key, value) {
+                    $("select[name='price']").append($('<option>', {
+                        value: value.id+'|'+value.numOfDays+'|'+value.pricePerDay,
+                        text: value.carType+' - '+value.priceType,
+                    }));
+                });
+            }
+            if (url == "/api/v1/parking" && method == 'POST'){
+                $("#parking-form select").val('').change();
+                $("#parking-form input[name='carNumber']").val('');
+                $("#parking-form input[name='brand']").val('');
+                $("#parking-form input[name='color']").val('');
+                $("#parking-form input[name='note']").val('');
+                $("#parking-form input[name='fullName']").val('');
+                $("#parking-form input[name='telephone']").val('');
+                $("#parking-form input[name='address']").val('');
+                $("#parking-form input[name='document']").val('');
+                $("#parking-form input[name='startDate']").val('');
+                $("#parking-form input[name='days']").val('');
+                $("#parking-form input[name='cost']").val('');
+                $("#parking-form input[name='place']").val('');
+                $("#parking-form input[name='endDate']").val('');
+
+                loadParking();
+            }
+            if (url == "/api/v1/parking" && method == 'DELETE'){
+                //request("/api/v1/places", "GET");
+                loadParking();
+            }
+        }).fail(function() { 
+            $.gritter.add({
+                title: textStatus,
+                //text: XMLHttpRequest.responseJSON.error,
+                image: '/images/warning.png',
+                time: 10000,
+                class_name: 'my-class'
+            });
+        });
+    }
+
+    function strToDate(str) {
+        const [dateValues, timeValues] = str.split(' ');
+        const [day, month, year] = dateValues.split('.');
+        const [hours, minutes] = timeValues.split(':');
+
+        const date = new Date(year, month-1, day, hours, minutes);
+
+        return date;
+    }
+
+    function setStartDate() {
+        var startDate = new Date();
+        $("input[name='startDate']").val($.format.date(startDate, 'dd.MM.yyyy HH:mm'));
+    }
+
+    function setEndDate() {
+        if ($("input[name='startDate']").val() == ''){
+        //    setStartDate();
+            return
+        }
+
+        var endDate = strToDate($("input[name='startDate']").val());
+        var days = Number($("input[name='days']").val());
+        endDate.setDate(endDate.getDate() + days);
+
+        $("input[name='endDate']").val($.format.date(endDate, 'dd.MM.yyyy HH:mm'));
+
+        strToDate($("input[name='startDate']").val());
+    }
+
+    $(function() {
+        $('#parking-save').on('click', function (){
+            var validated = false;
+            var serialize = $("#parking-form").serializeArray();
+            for (var v in serialize) {
+                switch(serialize[v].name) {
+                    case 'carNumber':
+                    case 'brand':
+                    case 'fullName':
+                    case 'telephone':
+                    case 'startDate':
+                    case 'days':
+                    case 'cost':
+                    case 'place':
+                        if (serialize[v].value == '') {
+                            validated = true;
+                        }
+                        break;
+                }
+            }
+            if (validated) {
+                $("#parking-form").addClass('was-validated');
+                return;
+            } else {
+                $("#parking-form").removeClass('was-validated');
+            }
+
+            var row = {
+                'carNumber': $("#parking-form input[name='carNumber']").val(),
+                'brand':     $("#parking-form input[name='brand']").val(),
+                'color':     $("#parking-form input[name='color']").val(),
+                'note':      $("#parking-form input[name='note']").val(),
+                'fullName':  $("#parking-form input[name='fullName']").val(),
+                'telephone': $("#parking-form input[name='telephone']").val(),
+                'address':   $("#parking-form input[name='address']").val(),
+                'document':  $("#parking-form input[name='document']").val(),
+                'startDate': strToDate($("#parking-form input[name='startDate']").val()),
+                'endDate':   strToDate($("#parking-form input[name='endDate']").val()),
+                'days':      Number($("#parking-form input[name='days']").val()),
+                'place':     Number($("#parking-form select[name='place']").val()),
+                'cost':      parseFloat($("#parking-form input[name='cost']").val()),
+            }
+
+            request("/api/v1/parking", "POST", row);
+        });
+
+        $("select[name='price']").change(function() {
+            var row = this.value.split('|');
+            if (row.length > 0){
+                $("input[name='days']").val(row[1]);
+                $("input[name='cost']").val(parseFloat(row[1])*parseFloat(row[2]));
+            } else {
+                $("input[name='days']").val('');
+                $("input[name='cost']").val('');
+            }
+
+            setEndDate();
+        });
+
+        $("input[name='startDate']").change(function() {
+            request("/api/v1/places", "GET"); 
+            setEndDate();
+        });
+
+        $("input[name='days']").keyup(function (){
+            var row = $("select[name='price']").val().split('|');
+            $("input[name='cost']").val(this.value*parseFloat(row[2]));
+            setEndDate();
+        });
+
+        $('#parking').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 800,
+            columns: [
+                { title: "Гос. номер", field: "carNumber", width: 100 },
+                { title: "Марка", field: "brand", width: 150 },
+                { title: "Владелец", field: "fullName", width: 200 },
+                { title: "Телефон", field: "telephone", width: 110 },
+                { title: "Въезд", field: "startDate", width: 150 },
+                { title: "Оплата до", field: "endDate", width: 150 },
+                { title: "Место", field: "place", width: 80 },
+                { title: "Оплата", field: "payment" },
+            ],
+            contextMenu: '#context-menu',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "exit"){
+                    request("/api/v1/parking", "DELETE", { id: row.id });
+                }
+            }
+        });
+
+        loadParking();
+
+        request("/api/v1/prices", "GET");
+        request("/api/v1/places", "GET");
+        
+        $("#startDate").datetimepicker({
+            format:'d.m.Y H:i'
+        });
+
+        $("#endDate").datetimepicker({
+            format:'d.m.Y H:i'
+        });
+    });
+</script>

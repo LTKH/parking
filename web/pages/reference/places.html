@@ -1,0 +1,180 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                        <div class="row">
+
+                            <div class="col-sm-12">
+                                <table id="myTable" data-height="1000" data-pagination-parts="pageInfo" data-row-style="rowStyle" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- context menu -->
+<ul id="context-menu-table" class="dropdown-menu" style="font-size: 12px;">
+    <li data-item="edit"><a class="dropdown-item">Редактировать</a></li>
+    <li data-item="delete"><a class="dropdown-item">Удалить</a></li>
+    <!--li data-item="added"><a class="dropdown-item">Добавить</a></li-->
+</ul>  
+
+<!-- Модальное окно -->
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Парковочное место</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="place-form">
+                    <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
+                    <div class="mb-3">
+                        <label for="number" class="form-label">Номер места</label>
+                        <input name="number" type="text" class="form-control" id="number" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <input name="description" type="text" class="form-control" id="description" style="font-size: 12px;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="save-button" type="button" class="btn btn-sm btn-primary">Сохранить изменения</button>
+                <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function rowStyle(row, index) {
+        if (row.idPark > 0) {
+            return {
+                css: {
+                    color: 'red'
+                }
+            }
+        }
+        return {}
+    }
+
+    function request(url, method, data) {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data)
+        }).done(function(jsn) {
+            if (method == 'GET'){
+                $.each(jsn.data, function(key, value) {
+                    value.status = (value.idPark == 0) ? 'Свободно' : 'Занято';
+                });
+                $('#myTable').bootstrapTable('load', jsn.data);
+            }
+            if (method == 'POST'){
+                $('#myModal').modal('hide');
+            }
+            if (method == 'POST' || method == 'DELETE'){
+                request("/api/v1/places", "GET");
+            }
+        }).fail(function(e) { 
+            if (e.status == 401 || e.status == 403){
+                window.location.replace("/login.html"); 
+            }
+        });
+    }
+
+    function buttons () {
+        return {
+            btnAdd: {
+                text: 'Add new row',
+                icon: 'bi-plus',
+                event: function () {
+                    $.each($("#myModal #place-form").serializeArray(), function(k, v) {
+                        $('#myModal input[name="'+v.name+'"]').val('');
+                    });
+                    $('#myModal').modal('show');
+                },
+                attributes: {
+                    title: 'Add a new row to the table'
+                }
+            }
+        }
+    }
+
+    $(function() {
+        $('#myModal .close').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myModal #close-button').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myModal #save-button').on('click', function () {
+            var row = {};
+            $.each($("#place-form").serializeArray(), function(k, v) {
+                if (v.name == 'id') {
+                    if (v.value == ''){
+                        return;
+                    }
+                    row[v.name] = Number(v.value);
+                    return;
+                }
+                if (v.name == 'placeNumber') {
+                    row[v.name] = Number(v.value);
+                    return;
+                }
+                row[v.name] = v.value;
+            });
+
+            request("/api/v1/places", "POST", row);
+        });
+
+        $('#myTable').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 900,
+            columns: [
+                { title: "Номер", field: "number", width: 50 },
+                { title: "Состояние", field: "status", width: 150 },
+                { title: "Описание", field: "description" }
+            ],
+            contextMenu: '#context-menu-table',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "edit"){
+                    $('#myModal input[name="id"]').val(row.id);
+                    $('#myModal #number').val(row.placeNumber);
+                    $('#myModal #description').val(row.description);
+                    $('#myModal').modal('show');
+                }
+                if(e.data("item") == "delete"){
+                    request("/api/v1/places", "DELETE", { id: row.id });
+                }
+            }
+        });
+
+        request("/api/v1/places", "GET");
+
+    });
+</script>

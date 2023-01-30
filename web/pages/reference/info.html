@@ -1,0 +1,118 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                        <div class="row">
+
+                            <div class="col-sm-12">
+                                <table id="myTable" data-pagination-parts="pageInfo" data-height="1000" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- context menu -->
+<ul id="context-menu-table" class="dropdown-menu" style="font-size: 12px;">
+    <li data-item="edit"><a class="dropdown-item">Редактировать</a></li>
+    <li data-item="delete"><a class="dropdown-item">Удалить</a></li>
+    <!--li data-item="added"><a class="dropdown-item">Добавить</a></li-->
+</ul>
+
+<!-- Модальное окно -->
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Автомобиль</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form">
+                    <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
+                    <div class="mb-3">
+                        <label for="number" class="form-label">Номер</label>
+                        <input name="number" type="text" class="form-control" id="number" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="brand" class="form-label">Марка</label>
+                        <input name="brand" type="text" class="form-control" id="brand" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Цвет</label>
+                        <input name="color" type="text" class="form-control" id="color" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Примечание</label>
+                        <input name="note" type="text" class="form-control" id="note" style="font-size: 12px;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="save-button" type="button" class="btn btn-sm btn-primary">Сохранить изменения</button>
+                <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function request(url, method, data) {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data)
+        }).done(function(jsn) {
+            if (method == 'GET'){
+                $('#myTable').bootstrapTable('load', jsn.data);
+            }
+        }).fail(function(e) { 
+            if (e.status == 401 || e.status == 403){
+                window.location.replace("/login.html"); 
+            }
+        });
+    }
+
+    $(function() {
+        $('#myModal .close').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myModal #close-button').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myTable').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 900,
+            columns: [
+                { title: "Наименование", field: "name", width: 200 },
+                { title: "Телефон", field: "telephone", width: 150 },
+                { title: "Адрес", field: "addres"}
+            ]
+        });
+
+        request("/api/v1/main", "GET");
+
+    });
+</script>

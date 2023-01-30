@@ -1,0 +1,181 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                        <div class="row">
+
+                            <div class="col-sm-12">
+                                <table id="myTable" data-height="1000" data-pagination-parts="pageInfo" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- context menu -->
+<ul id="context-menu-table" class="dropdown-menu" style="font-size: 12px;">
+    <li data-item="edit"><a class="dropdown-item">Редактировать</a></li>
+    <li data-item="delete"><a class="dropdown-item">Удалить</a></li>
+    <!--li data-item="added"><a class="dropdown-item">Добавить</a></li-->
+</ul>  
+
+<!-- Модальное окно -->
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Парковочное место</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="place-form">
+                    <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
+                    <div class="mb-3">
+                        <label for="carType" class="form-label">Вид автомобиля</label>
+                        <input name="carType" type="text" class="form-control" id="carType" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="priceType" class="form-label">Вид расценки</label>
+                        <input name="priceType" type="text" class="form-control" id="priceType" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="numOfDays" class="form-label">Количество дней</label>
+                        <input name="numOfDays" type="text" class="form-control" id="numOfDays" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pricePerDay" class="form-label">Цена одного дня</label>
+                        <input name="pricePerDay" type="text" class="form-control" id="pricePerDay" style="font-size: 12px;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="save-button" type="button" class="btn btn-sm btn-primary">Сохранить изменения</button>
+                <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function request(url, method, data) {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data)
+        }).done(function(jsn) {
+            if (method == 'GET'){
+                $('#myTable').bootstrapTable('load', jsn.data);
+            }
+            if (method == 'POST'){
+                $('#myModal').modal('hide');
+            }
+            if (method == 'POST' || method == 'DELETE'){
+                request("/api/v1/prices", "GET");
+            }
+        }).fail(function(e) { 
+            if (e.status == 401 || e.status == 403){
+                window.location.replace("/login.html"); 
+            }
+        });
+    }
+
+    function buttons () {
+        return {
+            btnAdd: {
+                text: 'Add new row',
+                icon: 'bi-plus',
+                event: function () {
+                    $.each($("#myModal #place-form").serializeArray(), function(k, v) {
+                        $('#myModal input[name="'+v.name+'"]').val('');
+                    });
+                    $('#myModal').modal('show');
+                },
+                attributes: {
+                    title: 'Add a new row to the table'
+                }
+            }
+        }
+    }
+
+    $(function() {
+        $('#myModal .close').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myModal #close-button').on('click', function () {
+            $('#myModal').modal('hide');
+        });
+
+        $('#myModal #save-button').on('click', function () {
+            var row = {};
+            $.each($("#place-form").serializeArray(), function(k, v) {
+                if (v.name == 'id') {
+                    if (v.value == ''){
+                        return;
+                    }
+                    row[v.name] = Number(v.value);
+                    return;
+                }
+                if (v.name == 'numOfDays') {
+                    row[v.name] = Number(v.value);
+                    return;
+                }
+                if (v.name == 'pricePerDay') {
+                    row[v.name] = parseFloat(v.value);
+                    return;
+                }
+                row[v.name] = v.value;
+            });
+
+            request("/api/v1/prices", "POST", row);
+        });
+
+        $('#myTable').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 900,
+            columns: [
+                { title: "Вид автомобиля", field: "carType", width: 150 },
+                { title: "Вид расценки", field: "priceType", width: 150 },
+                { title: "Количество дней", field: "numOfDays", width: 150 },
+                { title: "Цена одного дня", field: "pricePerDay" }
+            ],
+            contextMenu: '#context-menu-table',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "edit"){
+                    $('#myModal input[name="id"]').val(row.id);
+                    $('#myModal input[name="carType"]').val(row.carType);
+                    $('#myModal input[name="priceType"]').val(row.priceType);
+                    $('#myModal input[name="numOfDays"]').val(row.numOfDays);
+                    $('#myModal input[name="pricePerDay"]').val(row.pricePerDay);
+                    $('#myModal').modal('show');
+                }
+                if(e.data("item") == "delete"){
+                    request("/api/v1/prices", "DELETE", { id: row.id });
+                }
+            }
+        });
+
+        request("/api/v1/prices", "GET");
+
+    });
+</script>

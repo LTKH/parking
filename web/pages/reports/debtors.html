@@ -1,0 +1,97 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                        <div class="row">
+
+                            <div class="col-sm-12">
+                                <table id="table" data-height="1000" data-show-print="true" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- context menu -->
+<ul id="context-menu-debtors" class="dropdown-menu" style="font-size: 12px;">
+    <li data-item="edit"><a class="dropdown-item">Редактировать</a></li>
+    <li data-item="delete"><a class="dropdown-item">Удалить</a></li>
+    <!--li data-item="added"><a class="dropdown-item">Добавить</a></li-->
+</ul>  
+
+<script type="text/javascript">
+
+    function loadDebtors() {
+
+        $.ajax({
+            url: "/api/v1/parking"
+        }).done(function(jsn) {
+            debtors = [];
+            $.each(jsn.data, function(key, value) {
+                if (new Date(value.endDate).getTime() == 0) {
+                    return
+                }
+                if (value.debtor > 0){
+                    value.startDate = $.format.date(value.startDate, 'dd.MM.yyyy HH:mm');
+                    value.endDate = $.format.date(value.endDate, 'dd.MM.yyyy HH:mm');
+                    debtors.push(value);
+                }
+            });
+            console.log(debtors);
+            $('#table').bootstrapTable('load', debtors);
+        }).fail(function(XMLHttpRequest, textStatus) { 
+            $.gritter.add({
+                title: textStatus,
+                //text: XMLHttpRequest.responseJSON.error,
+                image: '/images/warning.png',
+                time: 10000,
+                class_name: 'my-class'
+            });
+        });
+    }
+
+    $(function() {
+        $('#table').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 900,
+            columns: [
+                { title: "Гос. номер", field: "carNumber", width: 100 },
+                { title: "Марка", field: "brand", width: 150 },
+                { title: "Владелец", field: "fullName", width: 200 },
+                { title: "Телефон", field: "telephone", width: 110 },
+                { title: "Въезд", field: "startDate", width: 150 },
+                { title: "Оплата до", field: "endDate", width: 150 },
+                { title: "Место", field: "place", width: 80 },
+                { title: "Оплата", field: "payment" },
+            ],
+            /*
+            contextMenu: '#context-menu-debtors',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "edit"){
+                    alert(row.number);
+                }
+            }
+            */
+        });
+
+        loadDebtors();
+
+    });
+</script>
