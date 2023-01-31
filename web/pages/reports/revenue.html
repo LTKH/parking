@@ -1,0 +1,114 @@
+<div class="row">
+
+    <div class="col-xl">
+
+        <div class="card border-0 mb-3 overflow-hidden text-silver">
+
+            <div class="card-body">
+                <div class="panel-body">
+                    <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+
+                        <form id="checks-form" class="row g-3">
+                            <div class="row mb-2">
+                                <div class="m-b-2 text-silver f-w-600 f-s-16"><b>Сформировать ведомость:</b></div>
+                                <div class="col-sm-9">
+                                    <div class="form-group row">
+                                        <div class="col-md-2 input-group-sm date">
+                                            <label class="form-label">Число от:</label>
+                                            <input id="startDate" name="startDate" type="text" class="form-control" autocomplete="off" style="font-size: 12px;">
+                                            <!--span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span-->
+                                        </div>
+                                        <div class="col-md-2 input-group-sm date">
+                                            <label class="form-label">Число до:</label>
+                                            <input id="endDate" name="endDate" type="text" class="form-control" autocomplete="off" style="font-size: 12px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="form-group row">
+                                        <div class="col-md-1 input-group-sm">
+                                            <button id="checks-show" type="button" class="btn btn-primary btn-sm mb-3">Сформировать</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- end row -->
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="checks" data-height="1000" data-pagination-parts="pageInfo" data-show-print="true" class="table table-responsive-sm table-sm table-hover">
+                                    <thead></thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    function request(url, method, data) {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data)
+        }).done(function(jsn) {
+            $.each(jsn.data, function(key, value) {
+                value.writeDate = (new Date(value.writeDate).getTime() != 0) ? $.format.date(value.writeDate, 'dd.MM.yyyy HH:mm') : '-';
+            });
+
+            $('#checks').bootstrapTable('load', jsn.data);
+        }).fail(function() { 
+            $.gritter.add({
+                title: textStatus,
+                //text: XMLHttpRequest.responseJSON.error,
+                image: '/images/warning.png',
+                time: 10000,
+                class_name: 'my-class'
+            });
+        });
+    }
+
+    $(function() {
+
+        $('#checks').bootstrapTable({
+            pagination: true,
+            classes: "table table-responsive-sd table-sd",
+            pageSize: 1000,
+            height: 800,
+            columns: [
+                { title: "Гос. номер", field: "carNumber", width: 100 },
+                { title: "Марка", field: "carBrand", width: 150 },
+                { title: "Цвет", field: "carColor", width: 100 },
+                { title: "Вид автомобиля", field: "carType", width: 200 },
+                { title: "Владелец", field: "fullName", width: 200 },
+                { title: "Номер чека", field: "number", width: 50 },
+                { title: "Дата чека", field: "writeDate", width: 150 },
+                { title: "Внесенная сумма", field: "totalCost", width: 80 },
+            ],
+            contextMenu: '#context-menu',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "exit"){
+                    request("/api/v1/parking", "DELETE", { id: row.id });
+                }
+            }
+        });
+        
+        $("#startDate").datetimepicker({
+            format:'d.m.Y H:i'
+        });
+
+        $("#endDate").datetimepicker({
+            format:'d.m.Y H:i'
+        });
+
+        request("/api/v1/checks", "GET");
+    });
+</script>

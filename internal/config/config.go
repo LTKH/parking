@@ -100,6 +100,18 @@ type User struct {
     Token            string                  `json:"token"`
 }
 
+type Check struct {
+    CarNumber        string                  `json:"carNumber"`
+    CarBrand         string                  `json:"carBrand"`
+    CarColor         string                  `json:"carColor"`
+    CarType          string                  `json:"carType"`
+    FullName         string                  `json:"fullName"`
+    Number           int                     `json:"number"`
+    WriteDate        time.Time               `json:"writeDate"`
+    TotalCost        float32                 `json:"totalCost"`
+    UserName         string                  `json:"userName"`
+}
+
 type Main struct {
     Id               string                  `json:"id"`
     IdUser           string                  `json:"idUser"`

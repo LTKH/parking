@@ -111,93 +111,119 @@ func (db *Client) CreateTables() error {
 func (db *Client) LoadObjects(table string) ([]interface{}, error) {
     result := []interface{}{}
 
-    if table == "cars" {
-        rows, err := db.client.Query("select * from cars order by id")
-        if err != nil {
-            return nil, err
-        }
-        defer rows.Close()
+    switch table {
+	    case "cars":
+            rows, err := db.client.Query("select * from cars order by id")
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
 
-        for rows.Next() {
-            var car config.Car
-            err := rows.Scan(&car.Id, &car.Number, &car.Brand, &car.Color, &car.Note)
-            if err != nil { return nil, err }
-            result = append(result, car) 
-        }
-    }
+            for rows.Next() {
+                var car config.Car
+                err := rows.Scan(&car.Id, &car.Number, &car.Brand, &car.Color, &car.Note)
+                if err != nil { return nil, err }
+                result = append(result, car) 
+            }
 
-    if table == "owners" {
-        rows, err := db.client.Query("select * from owners order by id")
-        if err != nil {
-            return nil, err
-        }
-        defer rows.Close()
+        case "owners":
+            rows, err := db.client.Query("select * from owners order by id")
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
 
-        for rows.Next() {
-            var owner config.Owner
-            err := rows.Scan(&owner.Id, &owner.IdCar, &owner.FullName, &owner.Telephone, &owner.Address, &owner.Document)
-            if err != nil { return nil, err }
-            result = append(result, owner) 
-        }
-    }
+            for rows.Next() {
+                var owner config.Owner
+                err := rows.Scan(&owner.Id, &owner.IdCar, &owner.FullName, &owner.Telephone, &owner.Address, &owner.Document)
+                if err != nil { return nil, err }
+                result = append(result, owner) 
+            }
 
-    if table == "prices" {
-        rows, err := db.client.Query("select * from prices order by id")
-        if err != nil {
-            return nil, err
-        }
-        defer rows.Close()
+        case "prices":
+            rows, err := db.client.Query("select * from prices order by id")
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
 
-        for rows.Next() {
-            var price config.Price
-            err := rows.Scan(&price.Id, &price.IdOrg, &price.CarType, &price.PriceType, &price.NumOfDays, &price.PricePerDay)
-            if err != nil { return nil, err }
-            result = append(result, price)
-        }
-    }
+            for rows.Next() {
+                var price config.Price
+                err := rows.Scan(&price.Id, &price.IdOrg, &price.CarType, &price.PriceType, &price.NumOfDays, &price.PricePerDay)
+                if err != nil { return nil, err }
+                result = append(result, price)
+            }
 
-    if table == "places" {
-        endDate := int64(0)
+        case "places":
+            endDate := int64(0)
 
-        rows, err := db.client.Query(`
-            select 
-                places.id,
-                places.idOrg,
-                ifnull(parking.id, 0),
-                ifnull(parking.endDate, 0),
-                places.number,
-                places.description 
-            from places 
-            left outer join parking on parking.idPlace = places.id
-            order by places.number
-        `)
-        if err != nil {
-            return nil, err
-        }
-        defer rows.Close()
+            rows, err := db.client.Query(`
+                select 
+                    places.id,
+                    places.idOrg,
+                    ifnull(parking.id, 0),
+                    ifnull(parking.endDate, 0),
+                    places.number,
+                    places.description 
+                from places 
+                left outer join parking on parking.idPlace = places.id
+                order by places.number
+            `)
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
 
-        for rows.Next() {
-            var object config.Place
-            err := rows.Scan(&object.Id, &object.IdOrg, &object.IdPark, &endDate, &object.Number, &object.Description)
-            if err != nil { return nil, err }
-            object.EndDate = time.Unix(endDate, 0)
-            result = append(result, object) 
-        }
-    }
+            for rows.Next() {
+                var object config.Place
+                err := rows.Scan(&object.Id, &object.IdOrg, &object.IdPark, &endDate, &object.Number, &object.Description)
+                if err != nil { return nil, err }
+                object.EndDate = time.Unix(endDate, 0)
+                result = append(result, object) 
+            }
 
-    if table == "main" {
-        rows, err := db.client.Query("select * from main order by id")
-        if err != nil {
-            return nil, err
-        }
-        defer rows.Close()
+        case "main":
+            rows, err := db.client.Query("select * from main order by id")
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
 
-        for rows.Next() {
-            var main config.Main
-            err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.Address, &main.Telephone)
-            if err != nil { return nil, err }
-            result = append(result, main)
-        }
+            for rows.Next() {
+                var main config.Main
+                err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.Address, &main.Telephone)
+                if err != nil { return nil, err }
+                result = append(result, main)
+            }
+    
+        case "checks":
+            writeDate := int64(0)
+
+            rows, err := db.client.Query(`
+                select 
+                    ifnull(cars.number, '') as carNumber,
+                    ifnull(cars.brand, '') as carBrand,
+                    ifnull(cars.color, '') as carColor,
+                    ifnull(checks.carType, '') as carType,
+                    checks.number as number,
+                    checks.writeDate as writeDate,
+                    checks.totalCost as totalCost
+                from checks
+                left outer join cars on checks.idCar = cars.id
+                order by checks.writeDate
+            `)
+            if err != nil {
+                return nil, err
+            }
+            defer rows.Close()
+
+            for rows.Next() {
+                var object config.Check
+                err := rows.Scan(&object.CarNumber, &object.CarBrand, &object.CarColor, &object.CarType, &object.Number, &writeDate, &object.TotalCost)
+                if err != nil { return nil, err }
+                object.WriteDate = time.Unix(writeDate, 0)
+                result = append(result, object) 
+            }
     }
 
     return result, nil
