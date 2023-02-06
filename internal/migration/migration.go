@@ -228,11 +228,18 @@ func Start(mdbfile string, conf *config.DB) error {
 
             if table.Name == "Main" {
 
+                //fmt.Printf("UNP - %v\n", DecodeWindows1251(fields[0]))
+                //fmt.Printf("NamePl - %v\n", DecodeWindows1251(fields[2]))
+                //fmt.Printf("Ryk - %v\n", DecodeWindows1251(fields[4]))
+                //fmt.Printf("LastNomer - %v\n", fields[6])
+                //fmt.Printf("Chek - %v\n", fields[9])
+
                 _, err = db.Exec(
-                    "insert into main (id,idUser,name,address,telephone) values (?,?,?,?,?)",
+                    "insert into main (id,idUser,name,fullName,address,telephone) values (?,?,?,?,?,?)",
                     idOrg,
                     "admin",
 					DecodeWindows1251(fields[1]),
+                    DecodeWindows1251(fields[4]),
                     DecodeWindows1251(fields[3]),
                     DecodeWindows1251(fields[5]),
                 )

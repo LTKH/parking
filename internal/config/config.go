@@ -116,6 +116,7 @@ type Main struct {
     Id               string                  `json:"id"`
     IdUser           string                  `json:"idUser"`
     Name             string                  `json:"name"`
+    FullName         string                  `json:"fullName"`
     Address          string                  `json:"address"`
     Telephone        string                  `json:"telephone"`
 }

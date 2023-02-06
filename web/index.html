@@ -33,7 +33,7 @@
                                 <li><a class="dropdown-item" href="/pages/reports/revenue.html" data-bs-toggle="pill">Выручка кассы</a></li>
                                 <li><a class="dropdown-item" href="/pages/reports/debtors.html" data-bs-toggle="pill">Должники автостоянки</a></li>
                                 <li><a class="dropdown-item" href="/pages/reports/cars.html" data-bs-toggle="pill">Сведения ТС</a></li>
-                                <li><a class="dropdown-item" href="/pages/reports/places.html" data-bs-toggle="pill">Отчет о занятости мест</a></li>
+                                <!--li><a class="dropdown-item" href="/pages/reports/places.html" data-bs-toggle="pill">Отчет о занятости мест</a></li-->
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -76,6 +76,14 @@
     <script type="text/javascript" src="/js/bootstrap-table-contextmenu.min.js"></script>
 
     <script>
+        function strToDate(str) {
+            const [dateValues, timeValues] = str.split(' ');
+            const [day, month, year] = dateValues.split('.');
+            const [hours, minutes] = timeValues.split(':');
+            const date = new Date(year, month-1, day, hours, minutes);
+            return date;
+        }
+
         function loadPage(url) {
             $.ajax({
                 url: url,

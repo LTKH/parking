@@ -96,6 +96,7 @@ func (db *Client) CreateTables() error {
             id            bigint(20) primary key,
             idUser        varchar(100) not null,
             name          varchar(100) not null,
+            fullName      varchar(250) not null,
             address       varchar(1500) default '',
             telephone     varchar(100) default ''
         );
@@ -108,7 +109,7 @@ func (db *Client) CreateTables() error {
     return nil
 }
 
-func (db *Client) LoadObjects(table string) ([]interface{}, error) {
+func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]interface{}, error) {
     result := []interface{}{}
 
     switch table {
@@ -191,13 +192,15 @@ func (db *Client) LoadObjects(table string) ([]interface{}, error) {
 
             for rows.Next() {
                 var main config.Main
-                err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.Address, &main.Telephone)
+                err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.FullName, &main.Address, &main.Telephone)
                 if err != nil { return nil, err }
                 result = append(result, main)
             }
     
         case "checks":
             writeDate := int64(0)
+            startDate := values["startDate"].(int64)
+            endDate := values["endDate"].(int64)
 
             rows, err := db.client.Query(`
                 select 
@@ -210,8 +213,9 @@ func (db *Client) LoadObjects(table string) ([]interface{}, error) {
                     checks.totalCost as totalCost
                 from checks
                 left outer join cars on checks.idCar = cars.id
+                where checks.writeDate >= ? and checks.writeDate < ?
                 order by checks.writeDate
-            `)
+            `, startDate, endDate)
             if err != nil {
                 return nil, err
             }
@@ -220,6 +224,7 @@ func (db *Client) LoadObjects(table string) ([]interface{}, error) {
             for rows.Next() {
                 var object config.Check
                 err := rows.Scan(&object.CarNumber, &object.CarBrand, &object.CarColor, &object.CarType, &object.Number, &writeDate, &object.TotalCost)
+                //fmt.Printf("%v\n", writeDate)
                 if err != nil { return nil, err }
                 object.WriteDate = time.Unix(writeDate, 0)
                 result = append(result, object) 

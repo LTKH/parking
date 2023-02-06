@@ -58,17 +58,20 @@
         $.ajax({
             url: url,
             method: method,
-            data: JSON.stringify(data)
+            data: data
         }).done(function(jsn) {
             $.each(jsn.data, function(key, value) {
                 value.writeDate = (new Date(value.writeDate).getTime() != 0) ? $.format.date(value.writeDate, 'dd.MM.yyyy HH:mm') : '-';
             });
 
             $('#checks').bootstrapTable('load', jsn.data);
-        }).fail(function() { 
+        }).fail(function(e) { 
+            if (e.status == 401 || e.status == 403){
+                window.location.replace("/login.html"); 
+            }
             $.gritter.add({
-                title: textStatus,
-                //text: XMLHttpRequest.responseJSON.error,
+                title: e.responseJSON.status,
+                text: e.responseJSON.error,
                 image: '/images/warning.png',
                 time: 10000,
                 class_name: 'my-class'
@@ -77,6 +80,14 @@
     }
 
     $(function() {
+
+        $('#checks-show').on('click', function (){
+            data = {
+                'startDate': parseInt(Date.parse(strToDate($("#checks-form input[name='startDate']").val())) / 1000),
+                'endDate':   parseInt(Date.parse(strToDate($("#checks-form input[name='endDate']").val())) / 1000),
+            }
+            request("/api/v1/checks", "GET", data);
+        });
 
         $('#checks').bootstrapTable({
             pagination: true,
@@ -92,13 +103,7 @@
                 { title: "Номер чека", field: "number", width: 50 },
                 { title: "Дата чека", field: "writeDate", width: 150 },
                 { title: "Внесенная сумма", field: "totalCost", width: 80 },
-            ],
-            contextMenu: '#context-menu',
-            onContextMenuItem: function(row, e){
-                if(e.data("item") == "exit"){
-                    request("/api/v1/parking", "DELETE", { id: row.id });
-                }
-            }
+            ]
         });
         
         $("#startDate").datetimepicker({
@@ -108,7 +113,5 @@
         $("#endDate").datetimepicker({
             format:'d.m.Y H:i'
         });
-
-        request("/api/v1/checks", "GET");
     });
 </script>

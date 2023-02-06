@@ -100,6 +100,13 @@
             if (e.status == 401 || e.status == 403){
                 window.location.replace("/login.html"); 
             }
+            $.gritter.add({
+                title: e.responseJSON.status,
+                text: e.responseJSON.error,
+                image: '/images/warning.png',
+                time: 10000,
+                class_name: 'my-class'
+            });
         });
     }
 
@@ -156,7 +163,7 @@
             pageSize: 1000,
             height: 900,
             columns: [
-                { title: "Номер", field: "number", width: 50 },
+                { title: "Номер", field: "number", width: 100 },
                 { title: "Состояние", field: "status", width: 150 },
                 { title: "Описание", field: "description" }
             ],

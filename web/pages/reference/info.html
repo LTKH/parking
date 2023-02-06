@@ -88,6 +88,13 @@
             if (e.status == 401 || e.status == 403){
                 window.location.replace("/login.html"); 
             }
+            $.gritter.add({
+                title: e.responseJSON.status,
+                text: e.responseJSON.error,
+                image: '/images/warning.png',
+                time: 10000,
+                class_name: 'my-class'
+            });
         });
     }
 
@@ -107,8 +114,9 @@
             height: 900,
             columns: [
                 { title: "Наименование", field: "name", width: 200 },
+                { title: "Руководитель", field: "fullName", width: 200 },
                 { title: "Телефон", field: "telephone", width: 150 },
-                { title: "Адрес", field: "addres"}
+                { title: "Адрес", field: "address"}
             ]
         });
 

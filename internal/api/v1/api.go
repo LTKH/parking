@@ -7,6 +7,7 @@ import (
     "time"
     "regexp"
     "errors"
+    "strconv"
     "net/http"
     "io/ioutil"
     "crypto/sha1"
@@ -269,21 +270,47 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
     res := re.FindStringSubmatch(r.URL.Path)
 
     if r.Method == "GET" {
+
+        row := map[string]interface{}{}
+
+        for k, v := range r.URL.Query() {
+            switch k {
+                case "startDate":
+                    i, err := strconv.Atoi(v[0])
+                    if err != nil {
+                        w.WriteHeader(500)
+                        w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                        return
+                    }
+                    row["startDate"] = int64(i)
+                case "endDate":
+                    i, err := strconv.Atoi(v[0])
+                    if err != nil {
+                        w.WriteHeader(500)
+                        w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                        return
+                    }
+                    row["endDate"] = int64(i)
+            }
+        }
+
         var rows []interface{} 
 
-        rows, err := db.DbClient.LoadObjects(*api.db, res[1])
+        rows, err := db.DbClient.LoadObjects(*api.db, res[1], row)
         if err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)
             w.WriteHeader(500)
             w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
             return
         }
+
         w.WriteHeader(200)
         w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
         return
     }
 
     if r.Method == "POST" {
+
         body, err := ioutil.ReadAll(r.Body)
         if err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)
@@ -292,7 +319,7 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        var row map[string]interface{}
+        row := map[string]interface{}{}
 
         if err := json.Unmarshal(body, &row); err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)
@@ -314,6 +341,7 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
     }
 
     if r.Method == "DELETE" {
+
         body, err := ioutil.ReadAll(r.Body)
         if err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)
@@ -322,7 +350,7 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        var row map[string]interface{}
+        row := map[string]interface{}{}
 
         if err := json.Unmarshal(body, &row); err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)

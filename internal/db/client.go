@@ -10,7 +10,7 @@ type DbClient interface {
     Close() error
     CreateTables() error
     //Objects
-    LoadObjects(table string) ([]interface{}, error)
+    LoadObjects(table string, values map[string]interface{}) ([]interface{}, error)
     SaveObject(table string, object map[string]interface{}) error
     DeleteObject(table string, id interface{}) error
     //Parking
