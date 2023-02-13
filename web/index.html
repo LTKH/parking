@@ -61,6 +61,28 @@
 
     <div id="content" class="content mt-3"></div>
 
+    <!-- Модальное окно -->
+    <div id="check-modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Чек</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="check" data-row-style="rowStyle" class="table table-responsive-sm table-sm table-hover">
+                        <thead></thead>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/jquery.datetimepicker.full.min.js"></script>
     <script type="text/javascript" src="/js/jquery-cookie.min.js"></script>
@@ -124,6 +146,14 @@
         }
 
         $(function() {
+            $('#check-modal .close').on('click', function () {
+                $('#check-modal').modal('hide');
+            });
+
+            $('#check-modal #close-button').on('click', function () {
+                $('#check-modal').modal('hide');
+            });
+
             $('#menu a').on('click', function () {
                 if(this.href.slice(-1) != '#') {
                     loadPage(this.href);
