@@ -22,12 +22,9 @@
                                             <label class="form-label">Число до:</label>
                                             <input id="endDate" name="endDate" type="text" class="form-control" autocomplete="off" style="font-size: 12px;">
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group row">
-                                        <div class="col-md-1 input-group-sm">
-                                            <button id="checks-show" type="button" class="btn btn-primary btn-sm mb-3">Сформировать</button>
+                                        <div class="col-md-2 input-group-sm date">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button id="checks-show" type="button" class="btn btn-primary form-control" style="font-size: 12px;">Сформировать</button>
                                         </div>
                                     </div>
                                 </div>
@@ -53,16 +50,19 @@
 </div>
 
 <script type="text/javascript">
-
     function request(url, method, data) {
         $.ajax({
             url: url,
             method: method,
             data: data
         }).done(function(jsn) {
+            sum = 0;
             $.each(jsn.data, function(key, value) {
+                sum = sum + parseFloat(value.totalCost);
                 value.writeDate = (new Date(value.writeDate).getTime() != 0) ? $.format.date(value.writeDate, 'dd.MM.yyyy HH:mm') : '-';
             });
+            //console.log(sum);
+            jsn.data.push({"writeDate": "<b>Сумма:</b>", "totalCost": sum.toFixed(2)});
 
             $('#checks').bootstrapTable('load', jsn.data);
         }).fail(function(e) { 
@@ -80,6 +80,18 @@
     }
 
     $(function() {
+        function totalTextFormatter(data) {
+            return '-'
+        }
+
+        function totalPriceFormatter(data) {
+            var sum = 0;
+            data.map(function(row){
+                //console.log(row.totalCost);
+                sum = sum + parseFloat(row.totalCost);
+            });
+            return sum;
+        }
 
         $('#checks-show').on('click', function (){
             data = {
@@ -91,18 +103,25 @@
 
         $('#checks').bootstrapTable({
             pagination: true,
-            classes: "table table-responsive-sd table-sd",
+            //classes: "table table-responsive-sd table-sd",
             pageSize: 1000,
             height: 800,
             columns: [
-                { title: "Гос. номер", field: "carNumber", width: 100 },
-                { title: "Марка", field: "carBrand", width: 150 },
-                { title: "Цвет", field: "carColor", width: 100 },
-                { title: "Вид автомобиля", field: "carType", width: 200 },
-                { title: "Владелец", field: "fullName", width: 200 },
-                { title: "Номер чека", field: "number", width: 50 },
-                { title: "Дата чека", field: "writeDate", width: 150 },
-                { title: "Внесенная сумма", field: "totalCost", width: 80 },
+                [ 
+                    { title: 'Автомобиль', colspan: 6, align: 'center' },
+                    { title: "Номер чека", rowspan: 2, align: 'center', valign: 'middle', field: "checkNumber", width: 50 },
+                    { title: "Дата чека", rowspan: 2, align: 'center', valign: 'middle', field: "writeDate", width: 150 },
+                    { title: "Внесенная сумма", rowspan: 2, align: 'center', valign: 'middle', field: "totalCost", width: 80 },
+                    { title: "Администратор", rowspan: 2, align: 'center', valign: 'middle', field: "userName", width: 80 },
+                ],
+                [
+                    { title: "Гос. номер", field: "carNumber", width: 100 },
+                    { title: "Марка", field: "carBrand", width: 150 },
+                    { title: "Цвет", field: "carColor", width: 100 },
+                    { title: "Место", field: "placeNumber", width: 100 },
+                    { title: "Тип платежа", field: "priceType", width: 200 },
+                    { title: "Владелец", field: "fullName", width: 200 },
+                ]
             ]
         });
         
@@ -113,5 +132,9 @@
         $("#endDate").datetimepicker({
             format:'d.m.Y H:i'
         });
+
+        var date = new Date();
+        date.setDate(date.getDate() + 1);
+        $("#checks-form input[name='endDate']").val($.format.date(date, 'dd.MM.yyyy 00:00'));
     });
 </script>

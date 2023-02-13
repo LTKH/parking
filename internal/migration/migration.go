@@ -49,9 +49,6 @@ func Start(mdbfile string, conf *config.DB) error {
     //if err != nil {
     //    return err
     //}
-    
-    idOrg := time.Now().UTC().UnixMicro()
-    fmt.Printf("idOrg - %v\n", idOrg)
 
 	db.Exec("delete from places")
 	db.Exec("delete from checks")
@@ -120,7 +117,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 _, err = db.Exec(
                     "replace into places (id,idOrg,number,description) values (?,?,?,?)", 
                     fields[0], 
-                    idOrg,
+                    0,
                     fields[0], 
                     DecodeWindows1251(fields[1]),
                 )
@@ -133,7 +130,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 _, err = db.Exec(
                     "replace into prices (id,idOrg,carType,priceType,numOfDays,pricePerDay) values (?,?,?,?,?,?)", 
 					fields[0],
-                    idOrg,
+                    0,
                     DecodeWindows1251(fields[1]),
                     DecodeWindows1251(fields[2]),
                     fields[3],
@@ -157,17 +154,20 @@ func Start(mdbfile string, conf *config.DB) error {
 					writeDate = fields[4].(time.Time).UTC().Unix()
 				}
 
+                //fmt.Printf("Type - %v\n", DecodeWindows1251(fields[8]))
+
                 _, err = db.Exec(
-                    "replace into checks (id,number,idOrg,idCar,startDate,writeDate,totalCost,numOfDays,carType,priceType,idPlace,idUser) values (?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "replace into checks (id,checkNumber,idOrg,carNumber,ownerFullName,startDate,writeDate,totalCost,numOfDays,priceType,placeNumber,userName) values (?,?,?,?,?,?,?,?,?,?,?,?)",
                     idCheck[1],                   //ID
                     fields[1],                    //Nomer
-					idOrg,
+					0,
                     DecodeWindows1251(fields[2]), //AvtoNomer
+                    "",
                     startDate,
                     writeDate,
                     fields[5],                    //SUMMA
                     fields[6],                    //DAYSE
-                    DecodeWindows1251(fields[7]), //TIPAVTO
+                    //DecodeWindows1251(fields[7]), //TIPAVTO
                     DecodeWindows1251(fields[8]), //TIPPRISE
                     fields[9],                    //Mesto
                     "admin",
@@ -202,7 +202,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 }
 
                 //fmt.Printf("id - %v\n", fields[6])
-                //fmt.Printf("idCar - %v\n", DecodeWindows1251(fields[1]))
+                fmt.Printf("idCar - %v\n", DecodeWindows1251(fields[1]))
                 //fmt.Printf("idOwner - %v\n", DecodeWindows1251(fields[2]))
                 //fmt.Printf("idCheck - %v\n", idCheck[1])
                 //fmt.Printf("idPlace - %v\n", fields[6])
@@ -210,9 +210,9 @@ func Start(mdbfile string, conf *config.DB) error {
                 //fmt.Printf("endDate - %v\n", endDate)
 
                 _, err = db.Exec(
-                    "replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate) values (?,?,?,?,?,?,?,?,?)", 
-                    fields[6],
-                    idOrg,
+                    "replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate,status) values (?,?,?,?,?,?,?,?,?,?)", 
+                    DecodeWindows1251(fields[1]),
+                    0,
                     DecodeWindows1251(fields[1]),
                     idOwner[1],
                     idCheck[1],
@@ -220,6 +220,7 @@ func Start(mdbfile string, conf *config.DB) error {
                     "admin",
                     startDate,
                     endDate,
+                    1,
                 )
                 if err != nil {
                     return err
@@ -236,7 +237,7 @@ func Start(mdbfile string, conf *config.DB) error {
 
                 _, err = db.Exec(
                     "insert into main (id,idUser,name,fullName,address,telephone) values (?,?,?,?,?,?)",
-                    idOrg,
+                    0,
                     "admin",
 					DecodeWindows1251(fields[1]),
                     DecodeWindows1251(fields[4]),

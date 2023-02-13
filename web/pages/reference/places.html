@@ -138,21 +138,11 @@
         });
 
         $('#myModal #save-button').on('click', function () {
-            var row = {};
-            $.each($("#place-form").serializeArray(), function(k, v) {
-                if (v.name == 'id') {
-                    if (v.value == ''){
-                        return;
-                    }
-                    row[v.name] = Number(v.value);
-                    return;
-                }
-                if (v.name == 'placeNumber') {
-                    row[v.name] = Number(v.value);
-                    return;
-                }
-                row[v.name] = v.value;
-            });
+            var row = {
+                'id': Number($('#myModal #number').val()),
+                'number': Number($('#myModal #number').val()),
+                'description': $('#myModal #description').val(),
+            };
 
             request("/api/v1/places", "POST", row);
         });

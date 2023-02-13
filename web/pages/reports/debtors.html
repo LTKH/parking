@@ -43,9 +43,9 @@
         }).done(function(jsn) {
             debtors = [];
             $.each(jsn.data, function(key, value) {
-                if (new Date(value.endDate).getTime() == 0) {
-                    return
-                }
+                //if (new Date(value.endDate).getTime() == 0) {
+                //    return
+                //}
                 if (value.debtor > 0){
                     value.startDate = $.format.date(value.startDate, 'dd.MM.yyyy HH:mm');
                     value.endDate = $.format.date(value.endDate, 'dd.MM.yyyy HH:mm');

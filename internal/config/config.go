@@ -58,7 +58,7 @@ type Owner struct {
 type Place struct {
     Id               int64                   `json:"id"`
     IdOrg            int64                   `json:"idOrg"`
-    IdPark           int64                   `json:"idPark"`
+    IdPark           string                  `json:"idPark"`
     EndDate          time.Time               `json:"endDate"`
     Number           int                     `json:"number"`
     Description      string                  `json:"description"`
@@ -74,7 +74,7 @@ type Price struct {
 }
 
 type Parking struct {
-    Id               int64                   `json:"id"`
+    Id               string                  `json:"id"`
     CarNumber        string                  `json:"carNumber"`
     Brand            string                  `json:"brand"`
     Color            string                  `json:"color"`
@@ -86,18 +86,22 @@ type Parking struct {
     StartDate        time.Time               `json:"startDate"`
     EndDate          time.Time               `json:"endDate"`
     Days             int                     `json:"days"`
-    Place            int64                   `json:"place"`
+    IdPlace          int64                   `json:"idPlace"`
+    PlaceNumber      int                     `json:"placeNumber"`
     Price            string                  `json:"price"`
+    PriceType        string                  `json:"priceType"`
     Cost             float32                 `json:"cost"`
     Debtor           int                     `json:"debtor"`
     CheckNumber      int                     `json:"checkNumber"`
     CheckDate        time.Time               `json:"checkDate"`
+    Status           int                     `json:"status"`
 }
 
 type User struct {
-    Login            string                  `json:"login"`
-    Password         string                  `json:"-"`
-    Token            string                  `json:"token"`
+    Id               string                  `json:"login"`
+    IdOrg            int64                   `json:"idOrg"`
+    Password         string                  `json:"token"`
+    FullName         string                  `json:"fullName"`
 }
 
 type Check struct {
@@ -105,8 +109,10 @@ type Check struct {
     CarBrand         string                  `json:"carBrand"`
     CarColor         string                  `json:"carColor"`
     CarType          string                  `json:"carType"`
+    PriceType        string                  `json:"priceType"`
     FullName         string                  `json:"fullName"`
-    Number           int                     `json:"number"`
+    PlaceNumber      int                     `json:"placeNumber"`
+    CheckNumber      int                     `json:"checkNumber"`
     WriteDate        time.Time               `json:"writeDate"`
     TotalCost        float32                 `json:"totalCost"`
     UserName         string                  `json:"userName"`

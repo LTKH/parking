@@ -49,14 +49,17 @@ func getHash(text string) string {
     return hex.EncodeToString(h.Sum(nil))
 }
 
-func authentication(cfg *config.Config, r *http.Request) (string, int, error) {
+func authentication(api *Api, r *http.Request) (string, int, error) {
 
     login, password, ok := r.BasicAuth()
     if ok {
-        if login == cfg.Global.Security.AdminUser { 
-            if password == cfg.Global.Security.AdminPassword {
-                return login, 204, nil
-            }
+        user, err := db.DbClient.GetUser(*api.db, login)
+        if err != nil {
+            log.Printf("[error] %v", err)
+            return "", 401, errors.New("Unauthorized")
+        }
+        if getHash(password) == user.Password {
+            return login, 204, nil
         }
         return login, 403, errors.New("Forbidden")
     }
@@ -70,12 +73,15 @@ func authentication(cfg *config.Config, r *http.Request) (string, int, error) {
         return "", 401, errors.New("Unauthorized")
     }
     if lg.Value != "" && tk.Value != "" {
-        if lg.Value == cfg.Global.Security.AdminUser { 
-            if tk.Value == getHash(cfg.Global.Security.AdminPassword) {
-                return login, 204, nil
-            }
+        user, err := db.DbClient.GetUser(*api.db, lg.Value)
+        if err != nil {
+            log.Printf("[error] %v", err)
+            return "", 401, errors.New("Unauthorized")
         }
-        return login, 403, errors.New("Forbidden")
+        if tk.Value == user.Password {
+            return lg.Value, 204, nil
+        }
+        return "", 403, errors.New("Forbidden")
     }
 
     return "", 401, errors.New("Unauthorized")
@@ -96,6 +102,16 @@ func New(conf *config.Config) (*Api, error) {
     }
 
     if err := client.CreateTables(); err != nil {
+        return &Api{}, err
+    }
+
+    user := config.User{
+        Id: conf.Global.Security.AdminUser,
+        IdOrg: 0,
+        Password: getHash(conf.Global.Security.AdminPassword),
+        FullName: conf.Global.Security.AdminUser,
+    }
+    if err := client.SetUser(user); err != nil {
         return &Api{}, err
     }
 
@@ -203,6 +219,18 @@ func (api *Api) ApiLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    user, err := db.DbClient.GetUser(*api.db, username)
+    if err != nil {
+        w.WriteHeader(403)
+        w.Write(encodeResp(&Resp{Status:"error", Error:"Login or password is incorrect"}))
+    }
+    if getHash(password) == user.Password {
+        w.WriteHeader(200)
+        w.Write(encodeResp(&Resp{Status:"success", Data:user}))
+        return
+    }
+
+    /*
     if username == api.conf.Global.Security.AdminUser { 
         if password == api.conf.Global.Security.AdminPassword {
             user := &config.User{
@@ -214,6 +242,7 @@ func (api *Api) ApiLogin(w http.ResponseWriter, r *http.Request) {
             return
         }
     }
+    */
 
     w.WriteHeader(403)
     w.Write(encodeResp(&Resp{Status:"error", Error:"Login or password is incorrect"}))
@@ -259,7 +288,7 @@ func (api *Api) ApiUpdate(w http.ResponseWriter, r *http.Request) {
 func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
 
-    _, code, err := authentication(api.conf, r)
+    _, code, err := authentication(api, r)
     if err != nil {
         w.WriteHeader(code)
         w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
@@ -378,7 +407,7 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
 func (api *Api) ApiParking(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
 
-    login, code, err := authentication(api.conf, r)
+    login, code, err := authentication(api, r)
     if err != nil {
         w.WriteHeader(code)
         w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
@@ -439,7 +468,7 @@ func (api *Api) ApiParking(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        var row map[string]int
+        var row map[string]string
 
         if err := json.Unmarshal(body, &row); err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)

@@ -110,11 +110,8 @@
                     if (new Date(value.checkDate).getTime() != 0) {
                         value.payment = 'N'+value.checkNumber+' - '+$.format.date(value.checkDate, 'dd.MM.yyyy');
                     }
-                    if (value.place == 0) {
-                        value.place = '-'
-                    }
-                    value.startDate = (new Date(value.startDate).getTime() != 0) ? $.format.date(value.startDate, 'dd.MM.yyyy HH:mm') : '-';
-                    value.endDate = (new Date(value.endDate).getTime() != 0) ? $.format.date(value.endDate, 'dd.MM.yyyy HH:mm') : '-';
+                    value.startDate = (new Date(value.startDate).getTime() != 0) ? $.format.date(value.startDate, 'dd.MM.yyyy HH:mm') : '';
+                    value.endDate = (new Date(value.endDate).getTime() != 0) ? $.format.date(value.endDate, 'dd.MM.yyyy HH:mm') : '';
                 });
 
                 $('#parking').bootstrapTable('load', jsn.data);
@@ -138,9 +135,9 @@
                 window.location.replace("/login.html"); 
             });
 
-            //setInterval(function() {
-            //    loadParking();
-            //}, 60000);
+            setInterval(function() {
+                loadParking();
+            }, 60000);
 
             loadPage('/pages/parking.html');
         });

@@ -154,17 +154,13 @@
         });
 
         $('#myModal #save-button').on('click', function () {
-            var row = {};
-            $.each($("#myModal #form").serializeArray(), function(k, v) {
-                if (v.name == 'id') {
-                    if (v.value == ''){
-                        return;
-                    }
-                    row[v.name] = Number(v.value);
-                    return;
-                }
-                row[v.name] = v.value;
-            });
+            var row = {
+                'id':        $('#myModal input[name="id"]').val(),
+                'idCar':     $('#myModal select[name="idCar"]').val(),
+                'fullName':  $('#myModal input[name="fullName"]').val(),
+                'telephone': $('#myModal input[name="telephone"]').val(),
+                'address':   $('#myModal input[name="address"]').val(),
+            };
 
             request("/api/v1/owners", "POST", row);
         });

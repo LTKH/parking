@@ -16,7 +16,10 @@ type DbClient interface {
     //Parking
     LoadParking() ([]config.Parking, error)
     SaveParking(object config.Parking, login string) error
-    DeleteParking(id interface{}, login string) error
+    DeleteParking(id string, login string) error
+    //User
+    GetUser(login string) (config.User, error)
+    SetUser(user config.User) error
 }
 
 func NewClient(config *config.DB) (DbClient, error) {

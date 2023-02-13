@@ -46,7 +46,7 @@ func (db *Client) CreateTables() error {
             document      varchar(150) default ''
         );
         create table if not exists parking (
-            id            bigint(20) primary key,
+            id            varchar(50) primary key,
             idOrg         bigint(20) not null,
             idCar         varchar(50) not null,
             idOwner       varchar(50) not null,
@@ -54,7 +54,8 @@ func (db *Client) CreateTables() error {
             idPlace       bigint(20) not null,
             idUser        varchar(100) not null,
             startDate     bigint(20) default 0,
-            endDate       bigint(20) default 0
+            endDate       bigint(20) default 0,
+            status        integer
         );
         create table if not exists places (
             id            bigint(20) primary key,
@@ -70,32 +71,35 @@ func (db *Client) CreateTables() error {
             numOfDays     integer,
             pricePerDay   float
         );
-        create table if not exists users (
-            id            bigint(20) primary key,
-            idOrg         bigint(20) not null,
-            password      varchar(100) not null,
-            fullName      varchar(250) not null,
-            address       varchar(1500) default '',
-            telephone     varchar(100) default ''
-        );
         create table if not exists checks (
             id            bigint(20) primary key,
             idOrg         bigint(20) not null,
-            idCar         varchar(50) not null,
-            idPlace       bigint(20) not null,
-            idUser        varchar(100) not null,
-            number        bigint(20) default 0,
+            carNumber     varchar(50) not null,
+            carBrand      varchar(100) default '',
+            carColor      varchar(50) default '',
+            carType       varchar(100),
+            placeNumber   integer not null,
+            priceType     varchar(100),
+            ownerFullName varchar(250) not null,
+            checkNumber   bigint(20) default 0,
             writeDate     bigint(20) default 0,
             startDate     bigint(20) default 0,
-            carType       varchar(100),
-            priceType     varchar(100),
             numOfDays     integer,
-            totalCost     float
+            totalCost     float,
+            userName      bigint(20) default 0
         );
         create table if not exists main (
             id            bigint(20) primary key,
             idUser        varchar(100) not null,
             name          varchar(100) not null,
+            fullName      varchar(250) not null,
+            address       varchar(1500) default '',
+            telephone     varchar(100) default ''
+        );
+        create table if not exists users (
+            id            varchar(100) primary key,
+            idOrg         bigint(20) not null,
+            password      varchar(100) not null,
             fullName      varchar(250) not null,
             address       varchar(1500) default '',
             telephone     varchar(100) default ''
@@ -106,6 +110,24 @@ func (db *Client) CreateTables() error {
         return err
     }
 
+    return nil
+}
+
+func (db *Client) GetUser(login string) (config.User, error) {
+    row := db.client.QueryRow("select id,idOrg,password from users where id = ?", login)
+    var user config.User
+    err := row.Scan(&user.Id, &user.IdOrg, &user.Password)
+    if err != nil {
+        return user, err
+    }
+    return user, nil
+}
+
+func (db *Client) SetUser(user config.User) error {
+    _, err := db.client.Exec("replace into users (id,idOrg,password,fullName) values (?,?,?,?)", user.Id, user.IdOrg, user.Password, user.FullName)
+    if err != nil {
+        return err
+    }
     return nil
 }
 
@@ -162,7 +184,7 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
                 select 
                     places.id,
                     places.idOrg,
-                    ifnull(parking.id, 0),
+                    ifnull(parking.id, ''),
                     ifnull(parking.endDate, 0),
                     places.number,
                     places.description 
@@ -204,15 +226,17 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             rows, err := db.client.Query(`
                 select 
-                    ifnull(cars.number, '') as carNumber,
-                    ifnull(cars.brand, '') as carBrand,
-                    ifnull(cars.color, '') as carColor,
-                    ifnull(checks.carType, '') as carType,
-                    checks.number as number,
+                    checks.carNumber as carNumber, 
+                    checks.carBrand as carBrand,
+                    checks.carColor as carColor,
+                    ifnull(checks.placeNumber, '') as placeNumber,
+                    ifnull(checks.ownerFullName, '') as ownerFullName,
+                    ifnull(checks.checkNumber, 0) as checkNumber,
+                    checks.priceType as priceType,
                     checks.writeDate as writeDate,
-                    checks.totalCost as totalCost
+                    checks.totalCost as totalCost,
+                    ifnull(checks.userName, '') as userName
                 from checks
-                left outer join cars on checks.idCar = cars.id
                 where checks.writeDate >= ? and checks.writeDate < ?
                 order by checks.writeDate
             `, startDate, endDate)
@@ -223,7 +247,7 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var object config.Check
-                err := rows.Scan(&object.CarNumber, &object.CarBrand, &object.CarColor, &object.CarType, &object.Number, &writeDate, &object.TotalCost)
+                err := rows.Scan(&object.CarNumber, &object.CarBrand, &object.CarColor, &object.PlaceNumber, &object.FullName, &object.CheckNumber, &object.PriceType, &writeDate, &object.TotalCost, &object.UserName)
                 //fmt.Printf("%v\n", writeDate)
                 if err != nil { return nil, err }
                 object.WriteDate = time.Unix(writeDate, 0)
@@ -246,15 +270,26 @@ func (db *Client) SaveObject(table string, object map[string]interface{}) error 
         count  = append(count, "?")
     }
 
-    stmt, err := db.client.Prepare(fmt.Sprintf("replace into %s (%s) values (%s)", table, strings.Join(fields, ","), strings.Join(count, ",")))
-    if err != nil { 
-        return err 
-    }
-    defer stmt.Close()
+    switch table {
+        case "places":
+            plsql := "replace into places (id,idOrg,number,description) values (?,?,?,?)"
+            _, err := db.client.Exec(plsql, object["id"], 0, object["number"], object["description"])
+            if err != nil {
+                return err
+            }
 
-    _, err = stmt.Exec(values...)
-    if err != nil { 
-        return err 
+        default:
+
+            stmt, err := db.client.Prepare(fmt.Sprintf("replace into %s (%s) values (%s)", table, strings.Join(fields, ","), strings.Join(count, ",")))
+            if err != nil { 
+                return err 
+            }
+            defer stmt.Close()
+
+            _, err = stmt.Exec(values...)
+            if err != nil { 
+                return err 
+            }
     }
 
     return nil
@@ -280,22 +315,26 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
 
     rows, err := db.client.Query(`
         select 
-            ifnull(parking.id,0) as id,
-            ifnull(cars.number,'') as carNumber, 
+            ifnull(parking.id,'') as id,
+            ifnull(cars.number,parking.idCar) as carNumber, 
             ifnull(cars.brand,'') as brand, 
+            ifnull(cars.color,'') as color, 
             ifnull(owners.fullName, '') as fullName, 
             ifnull(owners.telephone, '') as telephone, 
+            ifnull(places.id, 0) as placeId,
             ifnull(places.number, 0) as placeNumber, 
             ifnull(parking.startDate, 0) as startDate, 
             ifnull(parking.endDate, 0) as endDate,
-            ifnull(checks.number, 0) as checkNumber, 
-            ifnull(checks.writeDate, 0) as checkDate
+            ifnull(checks.checkNumber, 0) as checkNumber, 
+            ifnull(checks.priceType, '') as priceType,
+            ifnull(checks.writeDate, 0) as checkDate,
+            ifnull(parking.status, 0) as status
         from parking
         left outer join cars on cars.id = parking.idCar
         left outer join owners on owners.id = parking.idOwner
         left outer join places on places.id = parking.idPlace
         left outer join checks on checks.id = parking.idCheck
-        order by parking.id
+        order by checks.checkNumber desc
     `)
     if err != nil {
         return nil, err
@@ -309,7 +348,7 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
         var endDate int64
         var checkDate int64
 
-        err := rows.Scan(&object.Id, &object.CarNumber, &object.Brand, &object.FullName, &object.Telephone, &object.Place, &startDate, &endDate, &object.CheckNumber, &checkDate)
+        err := rows.Scan(&object.Id, &object.CarNumber, &object.Brand, &object.Color, &object.FullName, &object.Telephone, &object.IdPlace, &object.PlaceNumber, &startDate, &endDate, &object.CheckNumber, &object.PriceType, &checkDate, &object.Status)
         if err != nil {
             return nil, err
         }
@@ -328,31 +367,49 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
 
 func (db *Client) SaveParking(object config.Parking, login string) error {
 
-    idCheck := time.Now().UTC().UnixMicro()
     writeDate := time.Now().UTC().Unix()
     startDate := object.StartDate.UTC().Unix()
     endDate := object.EndDate.UTC().Unix()
+    idCheck := time.Now().UTC().UnixMicro()
 
-    crsql := "replace into cars (id,number,brand,color,note) values (?,?,?,?,?)"
-    _, err := db.client.Exec(crsql, object.CarNumber, object.CarNumber, object.Brand, object.Color, object.Note)
-    if err != nil {
-        return err
-    }
+    if object.Id == "" {
 
-    owsql := "replace into owners (id,idCar,fullName,telephone,address,document) values (?,?,?,?,?,?)"
-    _, err = db.client.Exec(owsql, object.Telephone, object.CarNumber, object.FullName, object.Telephone, object.Address, object.Document)
-    if err != nil {
-        return err
-    }
-    
-    chsql := "insert into checks (id,idOrg,number,idCar,writeDate,startDate,numOfDays,idPlace,idUser,totalCost) values (?,?,(select max(number)+1 from checks where idOrg = ?),?,?,?,?,?,?,?)"
-    _, err = db.client.Exec(chsql, idCheck, 0, 0, object.CarNumber, writeDate, startDate, object.Days, object.Place, login, object.Cost)
-    if err != nil {
-        return err
-    }
+        crsql := "replace into cars (id,number,brand,color,note) values (?,?,?,?,?)"
+        _, err := db.client.Exec(crsql, object.CarNumber, object.CarNumber, object.Brand, object.Color, object.Note)
+        if err != nil {
+            return err
+        }
 
-    prsql := "replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate) values (?,?,?,?,?,?,?,?,?)"
-    _, err = db.client.Exec(prsql, object.Place, 0, object.CarNumber, object.Telephone, idCheck, object.Place, login, startDate, endDate)
+        owsql := "replace into owners (id,idCar,fullName,telephone,address,document) values (?,?,?,?,?,?)"
+        _, err = db.client.Exec(owsql, object.Telephone, object.CarNumber, object.FullName, object.Telephone, object.Address, object.Document)
+        if err != nil {
+            return err
+        }
+
+        prsql := `
+            replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate,status) 
+            values (?,?,?,?,?,?,?,?,?,?)
+        `
+        _, err = db.client.Exec(prsql, object.CarNumber, 0, object.CarNumber, object.Telephone, idCheck, object.IdPlace, login, startDate, endDate, 1)
+        if err != nil {
+            return err
+        }
+
+    } else {
+
+        prsql := "update parking set idCheck = ?,idPlace = ?,idUser = ?,startDate = ?,endDate = ?, status = 1 where id = ?"
+        _, err := db.client.Exec(prsql, idCheck, object.IdPlace, login, startDate, endDate, object.Id)
+        if err != nil {
+            return err
+        }
+
+    }
+ 
+    chsql := `
+        insert into checks (id,idOrg,carNumber,carBrand,carColor,placeNumber,ownerFullName,checkNumber,writeDate,startDate,priceType,numOfDays,totalCost,userName) 
+        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(checkNumber)+1 from checks),?,?,?,?,?,?)
+    `
+    _, err := db.client.Exec(chsql, idCheck, 0, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, object.PriceType, object.Days, object.Cost, login)
     if err != nil {
         return err
     }
@@ -360,9 +417,9 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
     return nil
 }
 
-func (db *Client) DeleteParking(id interface{}, login string) error {
+func (db *Client) DeleteParking(id string, login string) error {
 
-    prsql := "update parking set idPlace = 0, endDate = 0, idUser = ? where id = ?"
+    prsql := "update parking set status = 0, idUser = ? where id = ?"
     _, err := db.client.Exec(prsql, login, id)
     if err != nil {
         return err

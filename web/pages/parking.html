@@ -7,14 +7,6 @@
             <div class="card-body">
                 <div class="panel-body">
                     <div id="data-table-default_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
-                        <!--div class="row">
-                            <div class="col-sm-12 col-md-6">
-                                <div class="dataTables_length" id="data-table-default_length"><label>Show <select name="data-table-default_length" aria-controls="data-table-default" class="custom-select custom-select-sm form-control form-control-sm"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select> entries</label></div>
-                            </div>
-                            <div class="col-sm-12 col-md-6">
-                                <div id="data-table-default_filter" class="dataTables_filter"><label>Search:<input type="search" class="form-control form-control-sm" placeholder="" aria-controls="data-table-default"></label></div>
-                            </div>
-                        </div-->
                         <form id="parking-form" class="row g-3">
                             <div class="row mb-2">
                                 <div class="text-silver f-w-600 f-s-16"><b>Сведения о автомобиле:</b></div>
@@ -22,7 +14,7 @@
                                     <div class="form-group row">
                                         <div class="col-md-2 input-group-sm">
                                             <label class="form-label">Гос. номер:</label>
-                                            <input name="carNumber" type="text" class="form-control" style="font-size: 12px;" required>
+                                            <input id="search" name="carNumber" type="text" class="form-control" style="font-size: 12px;" required>
                                         </div>
                                         <div class="col-md-3 input-group-sm">
                                             <label class="form-label">Марка:</label>
@@ -45,7 +37,7 @@
                                     <div class="form-group row">
                                         <div class="col-md-4 input-group-sm">
                                             <label class="form-label">ФИО владельца:</label>
-                                            <input name="fullName" type="text" class="form-control" style="font-size: 12px;" required>
+                                            <input  id="search" name="fullName" type="text" class="form-control" style="font-size: 12px;" required>
                                         </div>
                                         <div class="col-md-2 input-group-sm">
                                             <label class="form-label">Телефон:</label>
@@ -92,8 +84,7 @@
                                         </div>
                                         <div class="col-md-2 input-group-sm">
                                             <label class="form-label">Место:</label>
-                                            <!--input name="place" type="text" class="form-control" style="font-size: 12px;"-->
-                                            <select name="place" class="form-select form-select-sm" style="font-size: 12px;" required>
+                                            <select name="idPlace" class="form-select form-select-sm" style="font-size: 12px;" required>
                                                 <option selected disabled value=""></option>
                                             </select>
                                         </div>
@@ -103,11 +94,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-1">
+                                <div class="col-sm-3">
                                     <div class="form-group row">
-                                        <div class="col-md-1 input-group-sm">
-                                            <button id="parking-save" type="button" class="btn btn-primary btn-sm mb-3">Сохранить</button>
+                                        <div class="col-md-4 input-group-sm date">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button id="parking-save" type="button" class="btn btn-primary form-control" style="font-size: 12px;">Сохранить</button>
                                         </div>
+                                        <!--div class="col-md-1 input-group-sm">
+                                            <button id="parking-save" type="button" class="btn btn-primary btn-sm mb-3">Сохранить</button>
+                                        </div-->
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +136,7 @@
 </ul>  
 
 <!-- Модальное окно -->
-<div id="myModal" class="modal" tabindex="-1" role="dialog">
+<div id="entry-modal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -153,26 +148,45 @@
             <div class="modal-body">
                 <form id="form">
                     <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
-                    <div class="mb-3">
-                        <label for="number" class="form-label">Номер</label>
-                        <input name="number" type="text" class="form-control" id="number" style="font-size: 12px;">
-                    </div>
-                    <div class="mb-3">
-                        <label for="brand" class="form-label">Марка</label>
-                        <input name="brand" type="text" class="form-control" id="brand" style="font-size: 12px;">
-                    </div>
-                    <div class="mb-3">
-                        <label for="color" class="form-label">Цвет</label>
-                        <input name="color" type="text" class="form-control" id="color" style="font-size: 12px;">
-                    </div>
-                    <div class="mb-3">
-                        <label for="note" class="form-label">Примечание</label>
-                        <input name="note" type="text" class="form-control" id="note" style="font-size: 12px;">
-                    </div>
+                    <input name="brand" type="hidden" class="form-control" style="font-size: 12px;">
+                    <input name="color" type="hidden" class="form-control" style="font-size: 12px;">
+                    <input name="idPlace" type="hidden" class="form-control" style="font-size: 12px;">
+                    <input name="fullName" type="hidden" class="form-control" style="font-size: 12px;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td>Автомобиль:&nbsp;</td>
+                            <td colspan="3">
+                                <input name="carNumber" class="form-control form-control-sm" style="font-size: 12px;" disabled>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Вид&nbsp;расценки:&nbsp;</td>
+                            <td colspan="3">
+                                <select name="price" class="form-select form-select-sm" style="font-size: 12px;">
+                                    <option selected disabled value=""></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Кол.&nbsp;дней:</td>
+                            <td><input name="days" type="text" class="form-control form-control-sm" style="font-size: 12px;"></td>
+                            <td>&nbsp;&nbsp;Сумма:</td>
+                            <td><input name="cost" type="text" class="form-control form-control-sm" style="font-size: 12px;"></td>
+                        </tr>
+                        <tr height="20px">
+                            <td align="center" colspan="4">Действителен:</td>
+                        </tr>
+                        <tr>
+                            <td align="right">с:&nbsp;</td>
+                            <td><input id="startDate" name="startDate" type="text" class="form-control form-control-sm" autocomplete="off" style="font-size: 12px;" disabled></td>
+                            <td align="right">по:&nbsp;</td>
+                            <td><input id="endDate" name="endDate" type="text" class="form-control form-control-sm" autocomplete="off" style="font-size: 12px;"></td>
+                        </tr>
+                    </table>
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="save-button" type="button" class="btn btn-sm btn-primary">Сохранить изменения</button>
+                <button id="save-button" type="button" class="btn btn-sm btn-primary">Сохранить</button>
                 <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
             </div>
         </div>
@@ -182,21 +196,37 @@
 <script type="text/javascript">
 
     function rowStyle(row, index) {
-        if (new Date(row.endDate).getTime() > 0 && row.debtor > 0) {
-            return {
-                css: {
-                    color: 'red'
-                }
-            }
-        }
-        if (row.place == '-') {
+        if (row.status == 0) {
             return {
                 css: {
                     color: 'hsl(210,8%,75%);'
                 }
             }
         }
+        if (row.debtor > 0) {
+            return {
+                css: {
+                    color: 'red'
+                }
+            }
+        }
         return {}
+    }
+
+    function clearParkingForn() {
+        $("#parking-form select").val('').change();
+        $("#parking-form input[name='carNumber']").val('');
+        $("#parking-form input[name='brand']").val('');
+        $("#parking-form input[name='color']").val('');
+        $("#parking-form input[name='note']").val('');
+        $("#parking-form input[name='fullName']").val('');
+        $("#parking-form input[name='telephone']").val('');
+        $("#parking-form input[name='address']").val('');
+        $("#parking-form input[name='document']").val('');
+        $("#parking-form input[name='startDate']").val('');
+        $("#parking-form input[name='days']").val('');
+        $("#parking-form input[name='cost']").val('');
+        $("#parking-form input[name='endDate']").val('');
     }
 
     function request(url, method, data) {
@@ -206,55 +236,48 @@
             data: JSON.stringify(data)
         }).done(function(jsn) {
             if (url == "/api/v1/places" && method == 'GET'){
-                $("select[name='place']").empty();
+                $("select[name='idPlace']").empty();
                 $.each(jsn.data, function(key, value) {
+                    /*
                     if ($("#parking-form input[name='startDate']").val() != ''){
                         if (Date.parse(value.endDate) > strToDate($("#parking-form input[name='startDate']").val())) {
                             return
                         }
                     }
-                    $("select[name='place']").append($('<option>', {
+                    */
+                    $("select[name='idPlace']").append($('<option>', {
                         value: value.id,
                         text: value.number,
                     }));
                 });
+                $("select[name='idPlace']").val('').change();
             }
             if (url == "/api/v1/prices" && method == 'GET'){
                 $("select[name='price']").empty();
                 $("select[name='price']").append($('<option>', { value: '', text: '' }));
                 $.each(jsn.data, function(key, value) {
                     $("select[name='price']").append($('<option>', {
-                        value: value.id+'|'+value.numOfDays+'|'+value.pricePerDay,
+                        value: value.id+'|'+value.numOfDays+'|'+value.pricePerDay+'|'+value.priceType,
                         text: value.carType+' - '+value.priceType,
                     }));
                 });
             }
             if (url == "/api/v1/parking" && method == 'POST'){
-                $("#parking-form select").val('').change();
-                $("#parking-form input[name='carNumber']").val('');
-                $("#parking-form input[name='brand']").val('');
-                $("#parking-form input[name='color']").val('');
-                $("#parking-form input[name='note']").val('');
-                $("#parking-form input[name='fullName']").val('');
-                $("#parking-form input[name='telephone']").val('');
-                $("#parking-form input[name='address']").val('');
-                $("#parking-form input[name='document']").val('');
-                $("#parking-form input[name='startDate']").val('');
-                $("#parking-form input[name='days']").val('');
-                $("#parking-form input[name='cost']").val('');
-                $("#parking-form input[name='place']").val('');
-                $("#parking-form input[name='endDate']").val('');
-
+                $('#entry-modal').modal('hide'); 
+                clearParkingForn();
                 loadParking();
             }
             if (url == "/api/v1/parking" && method == 'DELETE'){
                 //request("/api/v1/places", "GET");
                 loadParking();
             }
-        }).fail(function() { 
+        }).fail(function(e) { 
+            if (e.status == 401 || e.status == 403){
+                window.location.replace("/login.html"); 
+            }
             $.gritter.add({
-                title: textStatus,
-                //text: XMLHttpRequest.responseJSON.error,
+                title: e.responseJSON.status,
+                text: e.responseJSON.error,
                 image: '/images/warning.png',
                 time: 10000,
                 class_name: 'my-class'
@@ -262,27 +285,36 @@
         });
     }
 
-    function setStartDate() {
+    function setStartDate(object) {
         var startDate = new Date();
-        $("input[name='startDate']").val($.format.date(startDate, 'dd.MM.yyyy HH:mm'));
+        $(object+" input[name='startDate']").val($.format.date(startDate, 'dd.MM.yyyy HH:mm'));
     }
 
-    function setEndDate() {
-        if ($("input[name='startDate']").val() == ''){
-        //    setStartDate();
+    function setEndDate(object) {
+        if ($(object+" input[name='startDate']").val() == ''){
+        //    setStartDate(object);
             return
         }
 
-        var endDate = strToDate($("input[name='startDate']").val());
-        var days = Number($("input[name='days']").val());
+        var endDate = strToDate($(object+" input[name='startDate']").val());
+        var days = Number($(object+" input[name='days']").val());
         endDate.setDate(endDate.getDate() + days);
 
-        $("input[name='endDate']").val($.format.date(endDate, 'dd.MM.yyyy HH:mm'));
+        $(object+" input[name='endDate']").val($.format.date(endDate, 'dd.MM.yyyy HH:mm'));
 
-        strToDate($("input[name='startDate']").val());
+        strToDate($(object+" input[name='startDate']").val());
     }
 
     $(function() {
+
+        $('#entry-modal .close').on('click', function () {
+            $('#entry-modal').modal('hide');
+        });
+
+        $('#entry-modal #close-button').on('click', function () {
+            $('#entry-modal').modal('hide');
+        });
+
         $('#parking-save').on('click', function (){
             var validated = false;
             var serialize = $("#parking-form").serializeArray();
@@ -309,6 +341,7 @@
                 $("#parking-form").removeClass('was-validated');
             }
 
+            var price = $("#parking-form select[name='price']").val().split('|');
             var row = {
                 'carNumber': $("#parking-form input[name='carNumber']").val(),
                 'brand':     $("#parking-form input[name='brand']").val(),
@@ -321,35 +354,80 @@
                 'startDate': strToDate($("#parking-form input[name='startDate']").val()),
                 'endDate':   strToDate($("#parking-form input[name='endDate']").val()),
                 'days':      Number($("#parking-form input[name='days']").val()),
-                'place':     Number($("#parking-form select[name='place']").val()),
                 'cost':      parseFloat($("#parking-form input[name='cost']").val()),
+                'idPlace':   Number($("#parking-form select[name='idPlace']").val()),
+                'priceType': price[3],
             }
 
             request("/api/v1/parking", "POST", row);
         });
 
-        $("select[name='price']").change(function() {
-            var row = this.value.split('|');
-            if (row.length > 0){
-                $("input[name='days']").val(row[1]);
-                $("input[name='cost']").val(parseFloat(row[1])*parseFloat(row[2]));
-            } else {
-                $("input[name='days']").val('');
-                $("input[name='cost']").val('');
+        $('#save-button').on('click', function (){
+            var price = $("#entry-modal select[name='price']").val().split('|');
+            var row = {
+                'id':        $("#entry-modal input[name='id']").val(),
+                'carNumber': $("#entry-modal input[name='carNumber']").val(),
+                'brand':     $("#entry-modal input[name='brand']").val(),
+                'color':     $("#entry-modal input[name='color']").val(),
+                'fullName':  $("#entry-modal input[name='fullName']").val(),
+                'startDate': strToDate($("#entry-modal input[name='startDate']").val()),
+                'endDate':   strToDate($("#entry-modal input[name='endDate']").val()),
+                'days':      Number($("#entry-modal input[name='days']").val()),
+                'cost':      parseFloat($("#entry-modal input[name='cost']").val()),
+                'idPlace':   Number($("#entry-modal input[name='idPlace']").val()),
+                'priceType': price[3],
             }
 
-            setEndDate();
+            request("/api/v1/parking", "POST", row);
         });
 
-        $("input[name='startDate']").change(function() {
+        $("#parking-form select[name='price']").change(function() {
+            var price = this.value.split('|');
+            if (price.length > 0){
+                $("#parking-form input[name='days']").val(price[1]);
+                $("#parking-form input[name='cost']").val(price[2]);
+            } else {
+                $("#parking-form input[name='days']").val('');
+                $("#parking-form input[name='cost']").val('');
+            }
+            setEndDate("#parking-form");
+        });
+
+        $("#entry-modal select[name='price']").change(function() {
+            var price = this.value.split('|');
+            if (price.length > 0){
+                $("#entry-modal input[name='days']").val(price[1]);
+                $("#entry-modal input[name='cost']").val(price[2]);
+            } else {
+                $("#entry-modal input[name='days']").val('');
+                $("#entry-modal input[name='cost']").val('');
+            }
+            setEndDate("#entry-modal");
+        });
+
+        $("#parking-form input[name='startDate']").change(function() {
             request("/api/v1/places", "GET"); 
-            setEndDate();
+            setEndDate("#parking-form");
         });
 
-        $("input[name='days']").keyup(function (){
-            var row = $("select[name='price']").val().split('|');
-            $("input[name='cost']").val(this.value*parseFloat(row[2]));
-            setEndDate();
+        $("#entry-modal input[name='endDate']").change(function() {
+            var startDate = strToDate($("#entry-modal input[name='startDate']").val());
+            var endDate = strToDate($("#entry-modal input[name='endDate']").val());
+            var difference = endDate.getTime() - startDate.getTime();
+            $("#entry-modal input[name='days']").val(Math.ceil(difference / (1000 * 3600 * 24)));
+            $("#entry-modal input[name='days']").keyup();
+        });
+
+        $("#parking-form input[name='days']").keyup(function (){
+            var price = $("#parking-form select[name='price']").val().split('|');
+            $("#parking-form input[name='cost']").val((this.value*(parseFloat(price[2])/parseFloat(price[1]))).toFixed(2));
+            setEndDate("#parking-form");
+        });
+
+        $("#entry-modal input[name='days']").keyup(function (){
+            var price = $("#entry-modal select[name='price']").val().split('|');
+            $("#entry-modal input[name='cost']").val((this.value*(parseFloat(price[2])/parseFloat(price[1]))).toFixed(2));
+            setEndDate("#entry-modal");
         });
 
         $('#parking').bootstrapTable({
@@ -364,13 +442,41 @@
                 { title: "Телефон", field: "telephone", width: 110 },
                 { title: "Въезд", field: "startDate", width: 150 },
                 { title: "Оплата до", field: "endDate", width: 150 },
-                { title: "Место", field: "place", width: 80 },
+                { title: "Место", field: "placeNumber", width: 80 },
                 { title: "Оплата", field: "payment" },
             ],
             contextMenu: '#context-menu',
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "exit"){
                     request("/api/v1/parking", "DELETE", { id: row.id });
+                }
+                if(e.data("item") == "entry"){
+                    if (row.endDate == ''){
+                        row.endDate = $.format.date(new Date(), 'dd.MM.yyyy 00:00');
+                    }
+
+                    $('#entry-modal select[name="price"]').val('').change();
+                    $('#entry-modal input[name="days"]').val('');
+                    $('#entry-modal input[name="cost"]').val('');
+                    $('#entry-modal input[name="idPlace"]').val(row.idPlace);
+                    $('#entry-modal input[name="id"]').val(row.id);
+                    $('#entry-modal input[name="brand"]').val(row.brand);
+                    $('#entry-modal input[name="color"]').val(row.color);
+                    $('#entry-modal input[name="carNumber"]').val(row.carNumber);
+                    $('#entry-modal input[name="fullName"]').val(row.fullName);
+                    $('#entry-modal input[name="startDate"]').val(row.endDate);
+                    $('#entry-modal input[name="endDate"]').val(''); 
+
+                    $("#entry-modal select[name='price'] > option").each(function() {
+                        var price = this.value.split('|');
+                        if (price.length > 0 && price[3] == row.priceType) {
+                            $('#entry-modal select[name="price"]').val(this.value);
+                            $('#entry-modal select[name="price"]').change();
+                            return;
+                        }
+                    });
+
+                    $('#entry-modal').modal('show');
                 }
             }
         });
@@ -380,12 +486,42 @@
         request("/api/v1/prices", "GET");
         request("/api/v1/places", "GET");
         
-        $("#startDate").datetimepicker({
+        $('#parking-form input[name="startDate"]').datetimepicker({
             format:'d.m.Y H:i'
         });
 
-        $("#endDate").datetimepicker({
+        $('#parking-form input[name="endDate"]').datetimepicker({
             format:'d.m.Y H:i'
+        });
+
+        $('#entry-modal input[name="startDate"]').datetimepicker({
+            format:'d.m.Y H:i'
+        });
+
+        $('#entry-modal input[name="endDate"]').datetimepicker({
+            format:'d.m.Y H:i'
+        });
+
+        $('#parking-form input[id="search"]').keyup(function(){
+            $('#parking').bootstrapTable('filterBy', {}, {
+                'filterAlgorithm': (row, filters) => {
+                    if ($('#parking-form input[name="carNumber"]').val() != ""){
+                        if (row.carNumber) {
+                            if (row.carNumber.search($('#parking-form input[name="carNumber"]').val()) < 0) return 0;
+                        } else {
+                            return 0;
+                        }
+                    } 
+                    if ($('#parking-form input[name="fullName"]').val() != ""){
+                        if (row.fullName) {
+                            if(row.fullName.search($('#parking-form input[name="fullName"]').val()) < 0) return 0;
+                        } else {
+                            return 0;
+                        }
+                    }
+                    return 1;
+                }
+            });
         });
     });
 </script>
