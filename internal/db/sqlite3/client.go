@@ -3,7 +3,6 @@ package sqlite3
 import (
     "fmt"
     "time"
-    "strings"
     "database/sql"
     _ "github.com/mattn/go-sqlite3"
     "github.com/ltkh/parking/internal/config"
@@ -19,6 +18,7 @@ func NewClient(conf *config.DB) (*Client, error) {
     if err != nil {
         return nil, err
     }
+
     return &Client{ client: conn, config: conf }, nil
 }
 
@@ -69,7 +69,7 @@ func (db *Client) CreateTables() error {
             carType       varchar(100),
             priceType     varchar(100),
             numOfDays     integer,
-            pricePerDay   float
+            totalCost     float
         );
         create table if not exists checks (
             id            bigint(20) primary key,
@@ -144,7 +144,13 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var car config.Car
-                err := rows.Scan(&car.Id, &car.Number, &car.Brand, &car.Color, &car.Note)
+                err := rows.Scan(
+                    &car.Id, 
+                    &car.Number, 
+                    &car.Brand, 
+                    &car.Color, 
+                    &car.Note,
+                )
                 if err != nil { return nil, err }
                 result = append(result, car) 
             }
@@ -158,7 +164,14 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var owner config.Owner
-                err := rows.Scan(&owner.Id, &owner.IdCar, &owner.FullName, &owner.Telephone, &owner.Address, &owner.Document)
+                err := rows.Scan(
+                    &owner.Id, 
+                    &owner.IdCar, 
+                    &owner.FullName, 
+                    &owner.Telephone, 
+                    &owner.Address, 
+                    &owner.Document,
+                )
                 if err != nil { return nil, err }
                 result = append(result, owner) 
             }
@@ -172,7 +185,14 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var price config.Price
-                err := rows.Scan(&price.Id, &price.IdOrg, &price.CarType, &price.PriceType, &price.NumOfDays, &price.PricePerDay)
+                err := rows.Scan(
+                    &price.Id, 
+                    &price.IdOrg, 
+                    &price.CarType, 
+                    &price.PriceType, 
+                    &price.NumOfDays, 
+                    &price.TotalCost,
+                )
                 if err != nil { return nil, err }
                 result = append(result, price)
             }
@@ -199,7 +219,14 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var object config.Place
-                err := rows.Scan(&object.Id, &object.IdOrg, &object.IdPark, &endDate, &object.Number, &object.Description)
+                err := rows.Scan(
+                    &object.Id, 
+                    &object.IdOrg, 
+                    &object.IdPark, 
+                    &endDate, 
+                    &object.Number, 
+                    &object.Description,
+                )
                 if err != nil { return nil, err }
                 object.EndDate = time.Unix(endDate, 0)
                 result = append(result, object) 
@@ -214,7 +241,14 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var main config.Main
-                err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.FullName, &main.Address, &main.Telephone)
+                err := rows.Scan(
+                    &main.Id, 
+                    &main.IdUser, 
+                    &main.Name, 
+                    &main.FullName, 
+                    &main.Address, 
+                    &main.Telephone,
+                )
                 if err != nil { return nil, err }
                 result = append(result, main)
             }
@@ -226,6 +260,7 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             rows, err := db.client.Query(`
                 select 
+                    checks.id as id, 
                     checks.carNumber as carNumber, 
                     checks.carBrand as carBrand,
                     checks.carColor as carColor,
@@ -247,8 +282,19 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 
             for rows.Next() {
                 var object config.Check
-                err := rows.Scan(&object.CarNumber, &object.CarBrand, &object.CarColor, &object.PlaceNumber, &object.FullName, &object.CheckNumber, &object.PriceType, &writeDate, &object.TotalCost, &object.UserName)
-                //fmt.Printf("%v\n", writeDate)
+                err := rows.Scan(
+                    &object.Id, 
+                    &object.CarNumber, 
+                    &object.CarBrand, 
+                    &object.CarColor, 
+                    &object.PlaceNumber, 
+                    &object.FullName, 
+                    &object.CheckNumber, 
+                    &object.PriceType, 
+                    &writeDate, 
+                    &object.TotalCost, 
+                    &object.UserName,
+                )
                 if err != nil { return nil, err }
                 object.WriteDate = time.Unix(writeDate, 0)
                 result = append(result, object) 
@@ -260,35 +306,56 @@ func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]in
 }
 
 func (db *Client) SaveObject(table string, object map[string]interface{}) error {
-    
-    fields := []string{}
-    values := []interface{}{}
-    count  := []string{}
-    for k, v := range object {
-        fields = append(fields, k)
-        values = append(values, v)
-        count  = append(count, "?")
-    }
 
     switch table {
         case "places":
+            if object["id"] == "" {
+                object["id"] = time.Now().UTC().Unix()
+            }
             plsql := "replace into places (id,idOrg,number,description) values (?,?,?,?)"
             _, err := db.client.Exec(plsql, object["id"], 0, object["number"], object["description"])
             if err != nil {
                 return err
             }
 
-        default:
-
-            stmt, err := db.client.Prepare(fmt.Sprintf("replace into %s (%s) values (%s)", table, strings.Join(fields, ","), strings.Join(count, ",")))
-            if err != nil { 
-                return err 
+        case "cars":
+            if object["id"] == "" {
+                object["id"] = object["number"]
             }
-            defer stmt.Close()
+            crsql := "replace into cars (id,number,brand,color,note) values (?,?,?,?,?)"
+            _, err := db.client.Exec(crsql, object["id"], object["number"], object["brand"], object["color"], object["note"])
+            if err != nil {
+                return err
+            }
 
-            _, err = stmt.Exec(values...)
-            if err != nil { 
-                return err 
+        case "owners":
+            if object["id"] == "" {
+                object["id"] = object["telephone"]
+            }
+            owsql := "replace into owners (id,idCar,fullName,telephone,address,document) values (?,?,?,?,?,?)"
+            _, err := db.client.Exec(owsql, object["id"], object["idCar"], object["fullName"], object["telephone"], object["address"], object["document"])
+            if err != nil {
+                return err
+            }
+
+        case "prices":
+            if object["id"] == "" {
+                object["id"] = time.Now().UTC().Unix()
+            }
+            prsql := "replace into prices (id,idOrg,carType,priceType,numOfDays,totalCost) values (?,?,?,?,?,?)"
+            _, err := db.client.Exec(prsql, object["id"], 0, object["carType"], object["priceType"], object["numOfDays"], object["totalCost"])
+            if err != nil {
+                return err
+            }
+
+        case "main":
+            if object["id"] == "" {
+                object["id"] = time.Now().UTC().Unix()
+            }
+            mnsql := "replace into main (id,idUser,name,fullName,telephone,address) values (?,?,?,?,?,?)"
+            _, err := db.client.Exec(mnsql, object["id"], 0, object["name"], object["fullName"], object["telephone"], object["address"])
+            if err != nil {
+                return err
             }
     }
 
@@ -296,18 +363,71 @@ func (db *Client) SaveObject(table string, object map[string]interface{}) error 
 }
 
 func (db *Client) DeleteObject(table string, id interface{}) error {
-    stmt, err := db.client.Prepare(fmt.Sprintf("delete from %s where id = ?", table))
-    if err != nil {
-        return err
-    }
-    defer stmt.Close()
+    switch table {
+        case "cars","main","owners","prices","places":
+            stmt, err := db.client.Prepare(fmt.Sprintf("delete from %s where id = ?", table))
+            if err != nil {
+                return err
+            }
+            defer stmt.Close()
 
-    _, err = stmt.Exec(id)
-    if err != nil {
-        return err
+            _, err = stmt.Exec(id)
+            if err != nil {
+                return err
+            }
     }
 
     return nil
+}
+
+func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
+    writeDate := int64(0)
+
+    row := db.client.QueryRow(`
+        select 
+            checks.id as id,
+            checks.carNumber as carNumber, 
+            checks.carBrand as carBrand,
+            checks.carColor as carColor,
+            ifnull(checks.placeNumber, '') as placeNumber,
+            ifnull(checks.ownerFullName, '') as ownerFullName,
+            ifnull(checks.checkNumber, 0) as checkNumber,
+            checks.priceType as priceType,
+            checks.writeDate as writeDate,
+            checks.totalCost as totalCost,
+            ifnull(checks.numOfDays, 0) as numOfDays,
+            ifnull(checks.userName, '') as userName,
+            ifnull(main.Name, '') as mainName,
+            ifnull(main.FullName, '') as mainFullName,
+            ifnull(main.Address, '') as mainAddress,
+            ifnull(main.Telephone, '') as mainTelephone
+        from checks
+        left outer join main on main.id = (select idOrg from users where id = ?)
+        where checks.id = ?
+    `, login, id)
+    var object config.Check
+    err := row.Scan(
+        &object.Id, 
+        &object.CarNumber, 
+        &object.CarBrand, 
+        &object.CarColor, 
+        &object.PlaceNumber, 
+        &object.FullName, 
+        &object.CheckNumber, 
+        &object.PriceType, 
+        &writeDate, 
+        &object.TotalCost, 
+        &object.NumOfDays,
+        &object.UserName,
+        &object.MainName,
+        &object.MainFullName,
+        &object.MainAddress,
+        &object.MainTelephone,
+    )
+    if err != nil { return object, err }
+    object.WriteDate = time.Unix(writeDate, 0)
+
+    return object, nil
 }
 
 func (db *Client) LoadParking() ([]config.Parking, error) {
@@ -315,10 +435,11 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
 
     rows, err := db.client.Query(`
         select 
-            ifnull(parking.id,'') as id,
-            ifnull(cars.number,parking.idCar) as carNumber, 
-            ifnull(cars.brand,'') as brand, 
-            ifnull(cars.color,'') as color, 
+            ifnull(parking.id, '') as id,
+            ifnull(parking.idCheck, 0) as idCheck,
+            ifnull(cars.number, parking.idCar) as carNumber, 
+            ifnull(cars.brand, '') as brand, 
+            ifnull(cars.color, '') as color, 
             ifnull(owners.fullName, '') as fullName, 
             ifnull(owners.telephone, '') as telephone, 
             ifnull(places.id, 0) as placeId,
@@ -334,7 +455,7 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
         left outer join owners on owners.id = parking.idOwner
         left outer join places on places.id = parking.idPlace
         left outer join checks on checks.id = parking.idCheck
-        order by checks.checkNumber desc
+        order by places.number
     `)
     if err != nil {
         return nil, err
@@ -348,7 +469,23 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
         var endDate int64
         var checkDate int64
 
-        err := rows.Scan(&object.Id, &object.CarNumber, &object.Brand, &object.Color, &object.FullName, &object.Telephone, &object.IdPlace, &object.PlaceNumber, &startDate, &endDate, &object.CheckNumber, &object.PriceType, &checkDate, &object.Status)
+        err := rows.Scan(
+            &object.Id,
+            &object.IdCheck, 
+            &object.CarNumber, 
+            &object.Brand, 
+            &object.Color, 
+            &object.FullName, 
+            &object.Telephone, 
+            &object.IdPlace, 
+            &object.PlaceNumber, 
+            &startDate, 
+            &endDate, 
+            &object.CheckNumber, 
+            &object.PriceType, 
+            &checkDate, 
+            &object.Status,
+        )
         if err != nil {
             return nil, err
         }
@@ -370,7 +507,7 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
     writeDate := time.Now().UTC().Unix()
     startDate := object.StartDate.UTC().Unix()
     endDate := object.EndDate.UTC().Unix()
-    idCheck := time.Now().UTC().UnixMicro()
+    idCheck := time.Now().UTC().Unix()
 
     if object.Id == "" {
 
@@ -419,11 +556,33 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
 
 func (db *Client) DeleteParking(id string, login string) error {
 
-    prsql := "update parking set status = 0, idUser = ? where id = ?"
-    _, err := db.client.Exec(prsql, login, id)
+    prsql := "delete from parking where id = ?"
+    _, err := db.client.Exec(prsql, id)
     if err != nil {
         return err
     }
 
     return nil
+}
+
+func (db *Client) DeleteOldChecks() (int64, error) {
+
+    stmt, err := db.client.Prepare("delete from checks where writeDate < ?")
+    if err != nil {
+        return 0, err
+    }
+    defer stmt.Close()
+
+    res, err := stmt.Exec(time.Now().UTC().Unix() - 86400 * 365)
+    if err != nil {
+        return 0, err
+    }
+
+    cnt, err := res.RowsAffected()
+    if err != nil {
+        return 0, err
+    }
+
+    return cnt, nil
+
 }

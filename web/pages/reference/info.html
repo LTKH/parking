@@ -39,7 +39,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Автомобиль</h5>
+                <h5 class="modal-title">Организация</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -48,20 +48,20 @@
                 <form id="form">
                     <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
                     <div class="mb-3">
-                        <label for="number" class="form-label">Номер</label>
-                        <input name="number" type="text" class="form-control" id="number" style="font-size: 12px;">
+                        <label for="name" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="name" style="font-size: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="brand" class="form-label">Марка</label>
-                        <input name="brand" type="text" class="form-control" id="brand" style="font-size: 12px;">
+                        <label for="fullName" class="form-label">Руководитель</label>
+                        <input name="fullName" type="text" class="form-control" id="fullName" style="font-size: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="color" class="form-label">Цвет</label>
-                        <input name="color" type="text" class="form-control" id="color" style="font-size: 12px;">
+                        <label for="telephone" class="form-label">Телефон</label>
+                        <input name="telephone" type="text" class="form-control" id="telephone" style="font-size: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="note" class="form-label">Примечание</label>
-                        <input name="note" type="text" class="form-control" id="note" style="font-size: 12px;">
+                        <label for="address" class="form-label">Адрес</label>
+                        <input name="address" type="text" class="form-control" id="address" style="font-size: 12px;">
                     </div>
                 </form>
             </div>
@@ -84,6 +84,12 @@
             if (method == 'GET'){
                 $('#myTable').bootstrapTable('load', jsn.data);
             }
+            if (method == 'POST'){
+                $('#myModal').modal('hide');
+            }
+            if (method == 'POST' || method == 'DELETE'){
+                request("/api/v1/main", "GET");
+            }
         }).fail(function(e) { 
             if (e.status == 401 || e.status == 403){
                 window.location.replace("/login.html"); 
@@ -98,6 +104,26 @@
         });
     }
 
+    function buttons () {
+        return {
+            btnAdd: {
+                text: 'Add new row',
+                icon: 'bi-plus',
+                event: function () {
+                    $('#myModal input[name="id"]').val('');
+                    $('#myModal input[name="name"]').val('');
+                    $('#myModal input[name="fullName"]').val('');
+                    $('#myModal input[name="telephone"]').val('');
+                    $('#myModal input[name="address"]').val('');
+                    $('#myModal').modal('show');
+                },
+                attributes: {
+                    title: 'Add a new row to the table'
+                }
+            }
+        }
+    }
+
     $(function() {
         $('#myModal .close').on('click', function () {
             $('#myModal').modal('hide');
@@ -105,6 +131,19 @@
 
         $('#myModal #close-button').on('click', function () {
             $('#myModal').modal('hide');
+        });
+
+        $('#myModal #save-button').on('click', function () {
+            var row = {
+                'id':        $('#myModal input[name="id"]').val(),
+                'name':      $('#myModal input[name="name"]').val(),
+                'fullName':  $('#myModal input[name="fullName"]').val(),
+                'telephone': $('#myModal input[name="telephone"]').val(),
+                'address':   $('#myModal input[name="address"]').val()
+            };
+            
+            request("/api/v1/main", "POST", row);
+
         });
 
         $('#myTable').bootstrapTable({
@@ -117,7 +156,25 @@
                 { title: "Руководитель", field: "fullName", width: 200 },
                 { title: "Телефон", field: "telephone", width: 150 },
                 { title: "Адрес", field: "address"}
-            ]
+            ],
+            contextMenu: '#context-menu-table',
+            onContextMenuItem: function(row, e){
+                if(e.data("item") == "edit"){
+                    $('#myModal input[name="id"]').val(row.id);
+                    $('#myModal input[name="name"]').val(row.name);
+                    $('#myModal input[name="fullName"]').val(row.fullName);
+                    $('#myModal input[name="telephone"]').val(row.telephone);
+                    $('#myModal input[name="address"]').val(row.address);
+                    $('#myModal').modal('show');
+                }
+                if(e.data("item") == "delete"){
+                    if (row.id == 0){
+                        alert('This element cannot be deleted.');
+                    } else {
+                        request("/api/v1/main", "DELETE", { id: row.id });
+                    }
+                }
+            }
         });
 
         request("/api/v1/main", "GET");

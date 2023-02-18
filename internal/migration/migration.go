@@ -128,7 +128,7 @@ func Start(mdbfile string, conf *config.DB) error {
             
             if table.Name == "SPrise" {
                 _, err = db.Exec(
-                    "replace into prices (id,idOrg,carType,priceType,numOfDays,pricePerDay) values (?,?,?,?,?,?)", 
+                    "replace into prices (id,idOrg,carType,priceType,numOfDays,totalCost) values (?,?,?,?,?,?)", 
 					fields[0],
                     0,
                     DecodeWindows1251(fields[1]),

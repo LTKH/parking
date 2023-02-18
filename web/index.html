@@ -10,6 +10,13 @@
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-table.min.css">
     <link rel="stylesheet" type="text/css" href="/css/jquery.datetimepicker.min.css">
     <!--link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css"-->
+    <style>
+        .check table, .check th, .check td {
+          border: 1px solid black;
+          border-collapse: collapse;
+          padding: 5px;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column h-100" style="font-size: 12px;">
     
@@ -49,7 +56,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">О программе</a>
                             <ul class="dropdown-menu" style="font-size: 12px;">
-                                <li><a class="dropdown-item" href="/pages/application/info.html" data-bs-toggle="pill">Информация</a></li>
+                                <!--li><a class="dropdown-item" href="/pages/application/info.html" data-bs-toggle="pill">Информация</a></li-->
                                 <li><a id="exit-button" class="dropdown-item" href="#" data-bs-toggle="pill">Выйти</a></li>
                             </ul>
                         </li>
@@ -60,28 +67,6 @@
     </header>
 
     <div id="content" class="content mt-3"></div>
-
-    <!-- Модальное окно -->
-    <div id="check-modal" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Чек</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table id="check" data-row-style="rowStyle" class="table table-responsive-sm table-sm table-hover">
-                        <thead></thead>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button id="close-button" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Закрыть</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/jquery.datetimepicker.full.min.js"></script>
@@ -151,6 +136,23 @@
             });
 
             $('#check-modal #close-button').on('click', function () {
+                $('#check-modal').modal('hide');
+            });
+
+            $('#check-modal #print-button').on('click', function () {
+                var mywindow = window.open('', 'PRINT');
+
+                mywindow.document.write('<html><head><title>'+document.title+'</title>');
+                mywindow.document.write('</head><body>');
+                mywindow.document.write(document.getElementById('div-check').innerHTML);
+                mywindow.document.write('</body></html>');
+
+                mywindow.document.close(); // necessary for IE >= 10
+                mywindow.focus(); // necessary for IE >= 10*/
+
+                mywindow.print();
+                mywindow.close();
+
                 $('#check-modal').modal('hide');
             });
 

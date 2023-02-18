@@ -20,6 +20,9 @@ type DbClient interface {
     //User
     GetUser(login string) (config.User, error)
     SetUser(user config.User) error
+    //Check
+    LoadCheck(id int64, login string) (interface{}, error)
+    DeleteOldChecks() (int64, error)
 }
 
 func NewClient(config *config.DB) (DbClient, error) {

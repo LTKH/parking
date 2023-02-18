@@ -1,9 +1,9 @@
 global:
-  listen_address: "127.0.0.1:8800"
+  listen_address: "0.0.0.0:8000"
   web_dir: "web"
   security:
     admin_user:     "admin"
-    admin_password: "admin"
+    admin_password: "111222333"
 
 db:
   client:           "sqlite3"

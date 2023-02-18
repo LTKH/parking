@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <title>Квитанция</title>
+    <style>
+        body {
+          font-size: 12px; 
+          margin: 0; 
+          font-family: var(--bs-body-font-family);
+          line-height: var(--bs-body-line-height);
+        } 
+        .check-br, .check-br th, .check-br td {
+          border: 1px dashed black;
+          border-collapse: collapse;
+          padding: 5px;
+        }
+        .check-nbr, .check-nbr th, .check-nbr td {
+          border: 0px;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+    <table class="check-br" width="750">
+        <thead></thead>
+        <tbody>
+            <tr>
+                <td width="250" style="vertical-align: top; border-right: solid 1px;">
+                    <b style="font-size: 16px;">Корешок<br>
+                    к квитанции № {{ .CheckNumber }}</b><br>
+                    <div style="text-align: center;"><b>Автостоянка место № {{ .PlaceNumber }}</b><br></div>
+                    Администрация и охрана не несет ответственности за вещи и ценности, находящиеся внутри автомобиля и прицепа.
+                </td>
+                <td width="250" style="vertical-align: top;">
+                    <b style="font-size: 16px;">Квитанция № A{{ .CheckNumber }}</b><br>
+                    На парковку автомобилей<br>
+                    <b>{{ .CarType }}</b>
+                </td>
+                <td width="250" style="vertical-align: top;">
+                    <div style="text-align: right; font-size: 10px;"><p>Утверждено:<br>Письмо Министерства Финансов<br>Российской Федерации от 24.02.94 Г 16-38</p></div>
+                    <b style="font-size: 16px;">Платная автостоянка</b>
+                    <table class="check-nbr" width="100%" style="font-size: 12px;">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <td>№:</td><td>{{ .MainName }}</td>
+                            </tr>
+                            <tr>
+                                <td>Адрес:</td><td>{{ .MainAddress }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Модель&nbsp;<b>{{ .CarBrand }}</b></td>
+                <td></td>
+                <td>Место №&nbsp;<b>{{ .PlaceNumber }}</b></td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Номерной знак&nbsp;<b>{{ .CarNumber }}</b></td>
+                <td colspan="2" style="text-align: center;">Принят на хранение (постоянно, временно) автотранспорт</td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Дата приема&nbsp;<b>{{ .WriteDate.Format "02.01.2006 15:04:05" }}</b></td>
+                <td colspan="2">Марка&nbsp;<b>{{ .CarBrand }}</b>&nbsp;номерной знак&nbsp;<b>{{ .CarNumber }}</b></td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Количество суток&nbsp;<b>{{ .NumOfDays }}</b></td>
+                <td colspan="2">Владелец&nbsp;<b>{{ .FullName }}</b></td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Сумма&nbsp;<b>{{ .TotalCost }}&nbsp;руб.</b></td>
+                <td colspan="2">Дата, время приема&nbsp;<b>{{ .WriteDate.Format "02.01.2006 15:04:05" }}</b></td>
+            </tr>
+            <tr>
+                <td style="text-align: center; border-right: solid 1px;"><b>Сведения о комплектности и техническом состоянии транспорта</b></td>
+                <td colspan="2" rowspan="2">
+                    С правилами пользования платными автостоянками ознакомлен(а) и согласен(а). 
+                    Комплектность и техническое состояние для временного автотранспорта указать в квитанцию и скрепить подписями.
+                    <table class="check-nbr" width="100%" style="font-size: 12px; padding: 2px;">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <td width="120"><b>Сдал владелец</b></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td></td><td style="border-top: solid 1px;">(подпись)</td><td style="border-top: solid 1px;">(расшифровка)</td>
+                            </tr>
+                            <tr>
+                                <td><b>Принял охраник</b></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td></td><td style="border-top: solid 1px;">(подпись)</td><td style="border-top: solid 1px;">(расшифровка)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;" height="100"></td>
+            </tr> 
+            <tr>
+                <td style="border-right: solid 1px;"><b>Владелец</b></td>
+                <td colspan="2">Получено за&nbsp;<b>{{ .NumOfDays }}</b>&nbsp;суток</td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;"><b>Охраник</b></td>
+                <td colspan="2">Сумма&nbsp;<b>{{ .TotalCost }}&nbsp;руб.</b></td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;"><b>Адрес</b>&nbsp;{{ .MainAddress }}</td>
+                <td colspan="2"><b>Охраник</b></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

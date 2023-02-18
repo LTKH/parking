@@ -13,6 +13,7 @@ import (
     "crypto/sha1"
     "encoding/hex"
     "encoding/json"
+    "html/template"
     "github.com/gorilla/websocket"
     "github.com/go-git/go-git/v5"
     "github.com/go-git/go-git/v5/storage/memory"
@@ -104,6 +105,19 @@ func New(conf *config.Config) (*Api, error) {
     if err := client.CreateTables(); err != nil {
         return &Api{}, err
     }
+
+    // Delete old checks
+    go func(client db.DbClient){
+        for {
+            cnt, err := client.DeleteOldChecks()
+            if err != nil {
+                log.Printf("[error] %v", err)
+            } else {
+                log.Printf("[info] deleted old checks (%d)", cnt)
+            }
+            time.Sleep(24 * time.Hour)
+        }
+    }(client)
 
     user := config.User{
         Id: conf.Global.Security.AdminUser,
@@ -493,204 +507,64 @@ func (api *Api) ApiParking(w http.ResponseWriter, r *http.Request) {
     w.Write(encodeResp(&Resp{Status:"error", Error:"Method Not Allowed"}))
 }
 
-/*
-func (api *Api) ApiCars(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
+func (api *Api) ApiCheck(w http.ResponseWriter, r *http.Request) {
+    login, code, err := authentication(api, r)
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(code)
+        w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+        return
+    }
 
     if r.Method == "GET" {
-        rows, err := db.DbClient.LoadCars(*api.db)
+
+        id := int64(0)
+
+        for k, v := range r.URL.Query() {
+            switch k {
+                case "id":
+                    i, err := strconv.Atoi(v[0])
+                    if err != nil {
+                        w.Header().Set("Content-Type", "application/json")
+                        w.WriteHeader(500)
+                        w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                        return
+                    }
+                    id = int64(i)
+            }
+        }
+
+        row, err := db.DbClient.LoadCheck(*api.db, id, login)
         if err != nil {
             log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
-        return
-    }
-
-    if r.Method == "POST" {
-        object := config.Car{}
-
-        body, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        if err := json.Unmarshal(body, &object); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        
-        if err := db.DbClient.SaveCar(*api.db, object); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
+            w.Header().Set("Content-Type", "application/json")
             w.WriteHeader(500)
             w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
             return
         }
 
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success"}))
+        tmpl, err := template.ParseFiles(api.conf.Global.WebDir+"/check.tmpl")
+        if err != nil {
+            log.Printf("[error] %v - %s", err, r.URL.Path)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(500)
+            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+            return
+        }
+
+        err = tmpl.Execute(w, row)
+        if err != nil {
+            log.Printf("[error] %v - %s", err, r.URL.Path)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(500)
+            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+            return
+        }
+
         return
     }
 
+    w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(405)
     w.Write(encodeResp(&Resp{Status:"error", Error:"Method Not Allowed"}))
 }
-
-func (api *Api) ApiOwners(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-
-    if r.Method == "GET" {
-        owners, err := db.DbClient.LoadOwners(*api.db)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success", Data:owners}))
-        return
-    }
-
-    if r.Method == "POST" {
-        owner := config.Owner{}
-
-        body, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        if err := json.Unmarshal(body, &owner); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        
-        if err := db.DbClient.SaveOwner(*api.db, owner); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success"}))
-        return
-    }
-
-    w.WriteHeader(405)
-    w.Write(encodeResp(&Resp{Status:"error", Error:"Method Not Allowed"}))
-}
-
-func (api *Api) ApiPlaces(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-
-    if r.Method == "GET" {
-        places, err := db.DbClient.LoadPlaces(*api.db)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success", Data:places}))
-        return
-    }
-
-    if r.Method == "POST" {
-        place := config.Place{}
-
-        body, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        if err := json.Unmarshal(body, &place); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        
-        if err := db.DbClient.SavePlace(*api.db, place); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success"}))
-        return
-    }
-
-    w.WriteHeader(405)
-    w.Write(encodeResp(&Resp{Status:"error", Error:"Method Not Allowed"}))
-}
-
-func (api *Api) ApiPrices(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-
-    if r.Method == "GET" {
-        prices, err := db.DbClient.LoadPrices(*api.db)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success", Data:prices}))
-        return
-    }
-
-    if r.Method == "POST" {
-        price := config.Price{}
-
-        body, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        if err := json.Unmarshal(body, &price); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        
-        if err := db.DbClient.SavePrice(*api.db, price); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success"}))
-        return
-    }
-
-    w.WriteHeader(405)
-    w.Write(encodeResp(&Resp{Status:"error", Error:"Method Not Allowed"}))
-}
-*/

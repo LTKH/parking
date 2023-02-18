@@ -59,6 +59,7 @@ func main() {
     http.HandleFunc("/api/v1/places", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/prices", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/checks", apiV1.ApiObjects)
+    http.HandleFunc("/api/v1/check", apiV1.ApiCheck)
     http.HandleFunc("/api/v1/main", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/parking", apiV1.ApiParking)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){

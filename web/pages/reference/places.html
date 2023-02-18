@@ -68,6 +68,7 @@
 <script type="text/javascript">
 
     function rowStyle(row, index) {
+        /*
         if (row.idPark > 0) {
             return {
                 css: {
@@ -75,6 +76,7 @@
                 }
             }
         }
+        */
         return {}
     }
 
@@ -84,16 +86,16 @@
             method: method,
             data: JSON.stringify(data)
         }).done(function(jsn) {
-            if (method == 'GET'){
+            if (url == '/api/v1/places' && method == 'GET'){
                 $.each(jsn.data, function(key, value) {
                     value.status = (value.idPark == 0) ? 'Свободно' : 'Занято';
                 });
                 $('#myTable').bootstrapTable('load', jsn.data);
             }
-            if (method == 'POST'){
+            if (url == '/api/v1/places' && method == 'POST'){
                 $('#myModal').modal('hide');
             }
-            if (method == 'POST' || method == 'DELETE'){
+            if (url == '/api/v1/places' && method == 'POST' || method == 'DELETE'){
                 request("/api/v1/places", "GET");
             }
         }).fail(function(e) { 
@@ -116,9 +118,9 @@
                 text: 'Add new row',
                 icon: 'bi-plus',
                 event: function () {
-                    $.each($("#myModal #place-form").serializeArray(), function(k, v) {
-                        $('#myModal input[name="'+v.name+'"]').val('');
-                    });
+                    $('#myModal input[name="id"]').val('');
+                    $('#myModal input[name="number"]').val('');
+                    $('#myModal input[name="description"]').val('');
                     $('#myModal').modal('show');
                 },
                 attributes: {
@@ -139,9 +141,9 @@
 
         $('#myModal #save-button').on('click', function () {
             var row = {
-                'id': Number($('#myModal #number').val()),
-                'number': Number($('#myModal #number').val()),
-                'description': $('#myModal #description').val(),
+                'id': Number($('#myModal input[name="id"]').val()),
+                'number': Number($('#myModal input[name="number"]').val()),
+                'description': $('#myModal input[name="description"]').val(),
             };
 
             request("/api/v1/places", "POST", row);
@@ -161,8 +163,8 @@
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "edit"){
                     $('#myModal input[name="id"]').val(row.id);
-                    $('#myModal #number').val(row.placeNumber);
-                    $('#myModal #description').val(row.description);
+                    $('#myModal input[name="number"]').val(row.number);
+                    $('#myModal input[name="description"]').val(row.description);
                     $('#myModal').modal('show');
                 }
                 if(e.data("item") == "delete"){

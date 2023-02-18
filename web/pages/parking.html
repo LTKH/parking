@@ -213,6 +213,15 @@
         return {}
     }
 
+    function printCheck(cont){
+        var newWin = window.open('', 'PRINT');
+        newWin.document.write(cont);
+        newWin.document.close();
+        newWin.focus(); // necessary for IE >= 10*/
+        newWin.print();
+        newWin.close();
+    }
+
     function clearParkingForn() {
         $("#parking-form select").val('').change();
         $("#parking-form input[name='carNumber']").val('');
@@ -233,7 +242,7 @@
         $.ajax({
             url: url,
             method: method,
-            data: JSON.stringify(data)
+            data: data
         }).done(function(jsn) {
             if (url == "/api/v1/places" && method == 'GET'){
                 $("select[name='idPlace']").empty();
@@ -257,10 +266,14 @@
                 $("select[name='price']").append($('<option>', { value: '', text: '' }));
                 $.each(jsn.data, function(key, value) {
                     $("select[name='price']").append($('<option>', {
-                        value: value.id+'|'+value.numOfDays+'|'+value.pricePerDay+'|'+value.priceType,
+                        value: value.id+'|'+value.numOfDays+'|'+value.totalCost+'|'+value.priceType,
                         text: value.carType+' - '+value.priceType,
                     }));
                 });
+            }
+            if (url == "/api/v1/check" && method == 'GET'){
+                //alert(JSON.stringify(jsn.data));
+                printCheck(jsn);
             }
             if (url == "/api/v1/parking" && method == 'POST'){
                 $('#entry-modal').modal('hide'); 
@@ -268,7 +281,6 @@
                 loadParking();
             }
             if (url == "/api/v1/parking" && method == 'DELETE'){
-                //request("/api/v1/places", "GET");
                 loadParking();
             }
         }).fail(function(e) { 
@@ -359,7 +371,7 @@
                 'priceType': price[3],
             }
 
-            request("/api/v1/parking", "POST", row);
+            request("/api/v1/parking", "POST", JSON.stringify(row));
         });
 
         $('#save-button').on('click', function (){
@@ -378,7 +390,7 @@
                 'priceType': price[3],
             }
 
-            request("/api/v1/parking", "POST", row);
+            request("/api/v1/parking", "POST", JSON.stringify(row));
         });
 
         $("#parking-form select[name='price']").change(function() {
@@ -432,7 +444,7 @@
 
         $('#parking').bootstrapTable({
             pagination: true,
-            classes: "table table-responsive-sd table-sd",
+            //classes: "table table-responsive-sd table-sd",
             pageSize: 1000,
             height: 800,
             columns: [
@@ -448,7 +460,7 @@
             contextMenu: '#context-menu',
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "exit"){
-                    request("/api/v1/parking", "DELETE", { id: row.id });
+                    request("/api/v1/parking", "DELETE", JSON.stringify({ id: row.id }));
                 }
                 if(e.data("item") == "entry"){
                     if (row.endDate == ''){
@@ -479,7 +491,11 @@
                     $('#entry-modal').modal('show');
                 }
                 if(e.data("item") == "print"){
-                    $('#check-modal').modal('show');
+                    //var mywindow = window.open('http://localhost:8000/api/v1/check?id='+row.idCheck);
+                    //mywindow.focus();
+                    //mywindow.print();
+                    //mywindow.close();
+                    request("/api/v1/check", "GET", { "id": row.idCheck });
                 }
             }
         });

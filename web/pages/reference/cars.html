@@ -110,9 +110,11 @@
                 text: 'Add new row',
                 icon: 'bi-plus',
                 event: function () {
-                    $.each($("#myModal #form").serializeArray(), function(k, v) {
-                        $('#myModal input[name="'+v.name+'"]').val('');
-                    });
+                    $('#myModal input[name="id"]').val('');
+                    $('#myModal input[name="number"]').val('');
+                    $('#myModal input[name="brand"]').val('');
+                    $('#myModal input[name="color"]').val('');
+                    $('#myModal input[name="note"]').val('');
                     $('#myModal').modal('show');
                 },
                 attributes: {
@@ -154,7 +156,7 @@
             contextMenu: '#context-menu-table',
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "edit"){
-                    $('#myModal input[name="id"]').val(row.number);
+                    $('#myModal input[name="id"]').val(row.id);
                     $('#myModal input[name="number"]').val(row.number);
                     $('#myModal input[name="brand"]').val(row.brand);
                     $('#myModal input[name="color"]').val(row.color);

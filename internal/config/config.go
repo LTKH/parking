@@ -70,11 +70,12 @@ type Price struct {
     CarType          string                  `json:"carType"`
     PriceType        string                  `json:"priceType"`
     NumOfDays        int                     `json:"numOfDays"`
-    PricePerDay      float32                 `json:"pricePerDay"`
+    TotalCost        float32                 `json:"totalCost"`
 }
 
 type Parking struct {
     Id               string                  `json:"id"`
+    IdCheck          int64                   `json:"idCheck"`
     CarNumber        string                  `json:"carNumber"`
     Brand            string                  `json:"brand"`
     Color            string                  `json:"color"`
@@ -105,6 +106,7 @@ type User struct {
 }
 
 type Check struct {
+    Id               int64                   `json:"id"`
     CarNumber        string                  `json:"carNumber"`
     CarBrand         string                  `json:"carBrand"`
     CarColor         string                  `json:"carColor"`
@@ -115,7 +117,12 @@ type Check struct {
     CheckNumber      int                     `json:"checkNumber"`
     WriteDate        time.Time               `json:"writeDate"`
     TotalCost        float32                 `json:"totalCost"`
+    NumOfDays        int                     `json:"numOfDays"`
     UserName         string                  `json:"userName"`
+    MainName         string                  `json:"mainName,omitempty"`
+    MainFullName     string                  `json:"mainFullName,omitempty"`
+    MainAddress      string                  `json:"mainAddress,omitempty"`
+    MainTelephone    string                  `json:"mainTelephone,omitempty"`
 }
 
 type Main struct {
