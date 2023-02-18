@@ -19,7 +19,7 @@ jobs:
           sudo apt-get install gcc-multilib g++-multilib
       - name: Golang build
         run: |
-          GOARCH=amd64 GOOS=windows go build -o parking.exe parking.go
+          CGO_ENABLED=1 GOARCH=amd64 GOOS=windows go build -o parking.exe parking.go
           zip -r parking-${{ github.ref_name }}_windows_amd64.zip web parking.exe parking.yml
       - name: Create Release
         id: create_release
