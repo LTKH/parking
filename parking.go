@@ -25,6 +25,7 @@ func (p *program) Start(s service.Service) error {
 func (p *program) run() {
 	// Command-line flag parsing
     cfFile         := flag.String("config.file", "parking.yml", "config file")
+    webDir         := flag.String("web.dir", "web", "web directory")
     lgFile         := flag.String("log.file", "", "log file")
     mdbFile        := flag.String("mdb.file", "", "mdb file")
     flag.Parse()
@@ -44,6 +45,10 @@ func (p *program) run() {
     cfg, err := config.New(*cfFile)
     if err != nil {
         log.Fatalf("[error] %v", err)
+    }
+
+    if cfg.Global.WebDir == "" {
+        cfg.Global.WebDir = *webDir
     }
 
     // Start migration
