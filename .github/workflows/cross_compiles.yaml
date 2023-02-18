@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-go@v3
       - name: GCC multilib
         run: |
-          sudo apt-get install gcc-multilib g++-multilib
+          sudo apt-get install gcc-multilib g++-multilib gcc-mingw-w64
       - name: Golang build
         run: |
           CGO_ENABLED=1 GOARCH=amd64 GOOS=windows go build -o parking.exe parking.go
