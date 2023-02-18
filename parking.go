@@ -5,6 +5,7 @@ import (
 	"log"
 	"flag"
 	"net/http"
+    "path/filepath"
 	"github.com/kardianos/service"
 	"gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
@@ -23,10 +24,17 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
+    // Parking path
+    ex, err := os.Executable()
+    if err != nil {
+        log.Fatalf("[error] %v", err)
+    }
+    exPath := filepath.Dir(ex)
+
 	// Command-line flag parsing
-    cfFile         := flag.String("config.file", "parking.yml", "config file")
-    webDir         := flag.String("web.dir", "web", "web directory")
-    lgFile         := flag.String("log.file", "", "log file")
+    cfFile         := flag.String("config.file", exPath+"/parking.yml", "config file")
+    webDir         := flag.String("web.dir", exPath+"/web", "web directory")
+    lgFile         := flag.String("log.file", exPath+"/parking.log", "log file")
     mdbFile        := flag.String("mdb.file", "", "mdb file")
     flag.Parse()
 	
