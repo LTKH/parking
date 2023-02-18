@@ -85,7 +85,7 @@ func (p *program) run() {
     http.HandleFunc("/api/v1/main", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/parking", apiV1.ApiParking)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
-        http.ServeFile(w, r, "web"+r.URL.Path)
+        http.ServeFile(w, r, cfg.Global.WebDir+"/"+r.URL.Path)
     })
 
     // Enabled listen port
