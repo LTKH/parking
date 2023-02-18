@@ -19,8 +19,8 @@ jobs:
           sudo apt-get install gcc-multilib g++-multilib gcc-mingw-w64
       - name: Golang build
         run: |
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking.exe parking.go
-          zip -r parking-${{ github.ref_name }}_windows_amd64.zip web parking.exe parking.yml
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
+          zip -r parking-${{ github.ref_name }}_windows_amd64.zip web parking64.exe parking.yml
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
