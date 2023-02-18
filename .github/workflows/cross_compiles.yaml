@@ -17,7 +17,7 @@ jobs:
       - name: Golang build
         run: |
           GOARCH=amd64 GOOS=windows go build -o parking.exe parking.go
-          zip ./parking-${{ github.ref }}_windows_amd64.zip web parking.exe parking.yml
+          zip parking-${{ github.ref_name }}_windows_amd64.zip web parking.exe parking.yml
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -35,6 +35,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ./parking-${{ github.ref }}_windows_amd64.zip
+          asset_name: ./parking-${{ github.ref_name }}_windows_amd64.zip
           asset_label: latest
 
