@@ -1,26 +1,35 @@
-package main 
+package main
 
 import (
-    "os"
-    "log"
-    "flag"
-    "net/http"
-    //"github.com/webview/webview"
-    "gopkg.in/natefinch/lumberjack.v2"
+	"os"
+	"log"
+	"flag"
+	"net/http"
+	"github.com/kardianos/service"
+	"gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
     "github.com/ltkh/parking/internal/api/v1"
     "github.com/ltkh/parking/internal/migration"
 )
 
-func main() {
+var logger service.Logger
 
-    // Command-line flag parsing
+type program struct{}
+
+func (p *program) Start(s service.Service) error {
+	// Start should not block. Do the actual work async.
+	go p.run()
+	return nil
+}
+
+func (p *program) run() {
+	// Command-line flag parsing
     cfFile         := flag.String("config.file", "parking.yml", "config file")
-    lgFile         := flag.String("log.file", "parking.log", "log file")
+    lgFile         := flag.String("log.file", "", "log file")
     mdbFile        := flag.String("mdb.file", "", "mdb file")
     flag.Parse()
-
-    // Logging settings
+	
+	// Logging settings
     if *lgFile != "" {
         log.SetOutput(&lumberjack.Logger{
             Filename:   *lgFile,
@@ -65,19 +74,36 @@ func main() {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
         http.ServeFile(w, r, "web"+r.URL.Path)
     })
+
     // Enabled listen port
     if err := http.ListenAndServe(cfg.Global.ListenAddr, nil); err != nil {
         log.Fatalf("[error] %v", err)
     }
+}
 
-    /*
-    go func(){
-    w := webview.New(true)
-    defer w.Destroy()
-    w.SetTitle("Parking")
-    w.SetSize(cfg.Window.Width, cfg.Window.Height, webview.HintNone)
-    w.Navigate(cfg.Window.Navigate)
-    w.Run()
-    }()
-    */
+func (p *program) Stop(s service.Service) error {
+	// Stop should not block. Return with a few seconds.
+	return nil
+}
+
+func main() {
+	svcConfig := &service.Config{
+		Name:        "Parking",
+		DisplayName: "Parking",
+		Description: "",
+	}
+
+	prg := &program{}
+	s, err := service.New(prg, svcConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger, err = s.Logger(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = s.Run()
+	if err != nil {
+		logger.Error(err)
+	}
 }
