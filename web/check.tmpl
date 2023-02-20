@@ -17,6 +17,8 @@
         }
         .check-nbr, .check-nbr th, .check-nbr td {
           border: 0px;
+          padding: 2px; 
+          margin: 0;
         }
     </style>
 </head>
@@ -72,6 +74,10 @@
             <tr>
                 <td style="border-right: solid 1px;">Сумма&nbsp;<b>{{ .TotalCost }}&nbsp;руб.</b></td>
                 <td colspan="2">Дата, время приема&nbsp;<b>{{ .WriteDate.Format "02.01.2006 15:04:05" }}</b></td>
+            </tr>
+            <tr>
+                <td style="border-right: solid 1px;">Дата по&nbsp;<b>{{ .EndDate.Format "02.01.2006 15:04:05" }}</b></td>
+                <td colspan="2">с&nbsp;<b>{{ .StartDate.Format "02.01.2006 15:04:05" }}</b>&nbsp;по&nbsp;<b>{{ .EndDate.Format "02.01.2006 15:04:05" }}</b></td>
             </tr>
             <tr>
                 <td style="text-align: center; border-right: solid 1px;"><b>Сведения о комплектности и техническом состоянии транспорта</b></td>

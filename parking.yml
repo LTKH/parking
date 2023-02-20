@@ -1,5 +1,5 @@
 global:
-  listen_address: "0.0.0.0:8000"
+  listen_address: "127.0.0.1:8000"
   security:
     admin_user:     "admin"
     admin_password: "111222333"
@@ -8,7 +8,7 @@ db:
   client:           "sqlite3"
   conn_string:      "parking.db"
 
-window:
-  width: 1000
-  height: 800
-  navigate: "http://localhost:8800/index.html"
+#window:
+#  width: 1000
+#  height: 800
+#  navigate: "http://localhost:8800/index.html"

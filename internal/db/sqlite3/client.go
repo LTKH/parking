@@ -84,6 +84,7 @@ func (db *Client) CreateTables() error {
             checkNumber   bigint(20) default 0,
             writeDate     bigint(20) default 0,
             startDate     bigint(20) default 0,
+            endDate       bigint(20) default 0,
             numOfDays     integer,
             totalCost     float,
             userName      bigint(20) default 0
@@ -381,7 +382,9 @@ func (db *Client) DeleteObject(table string, id interface{}) error {
 }
 
 func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
-    writeDate := int64(0)
+    var writeDate int64
+    var startDate int64
+    var endDate int64
 
     row := db.client.QueryRow(`
         select 
@@ -394,6 +397,8 @@ func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
             ifnull(checks.checkNumber, 0) as checkNumber,
             checks.priceType as priceType,
             checks.writeDate as writeDate,
+            checks.startDate as startDate,
+            checks.endDate as endDate,
             checks.totalCost as totalCost,
             ifnull(checks.numOfDays, 0) as numOfDays,
             ifnull(checks.userName, '') as userName,
@@ -416,6 +421,8 @@ func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
         &object.CheckNumber, 
         &object.PriceType, 
         &writeDate, 
+        &startDate, 
+        &endDate,
         &object.TotalCost, 
         &object.NumOfDays,
         &object.UserName,
@@ -426,6 +433,8 @@ func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
     )
     if err != nil { return object, err }
     object.WriteDate = time.Unix(writeDate, 0)
+    object.StartDate = time.Unix(startDate, 0)
+    object.EndDate = time.Unix(endDate, 0)
 
     return object, nil
 }
@@ -465,9 +474,9 @@ func (db *Client) LoadParking() ([]config.Parking, error) {
     for rows.Next() {
 
         object := config.Parking{}
+        var checkDate int64
         var startDate int64
         var endDate int64
-        var checkDate int64
 
         err := rows.Scan(
             &object.Id,
@@ -543,10 +552,10 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
     }
  
     chsql := `
-        insert into checks (id,idOrg,carNumber,carBrand,carColor,placeNumber,ownerFullName,checkNumber,writeDate,startDate,priceType,numOfDays,totalCost,userName) 
-        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(checkNumber)+1 from checks),?,?,?,?,?,?)
+        insert into checks (id,idOrg,carNumber,carBrand,carColor,placeNumber,ownerFullName,checkNumber,writeDate,startDate,endDate,priceType,numOfDays,totalCost,userName) 
+        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(checkNumber)+1 from checks),?,?,?,?,?,?,?)
     `
-    _, err := db.client.Exec(chsql, idCheck, 0, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, object.PriceType, object.Days, object.Cost, login)
+    _, err := db.client.Exec(chsql, idCheck, 0, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, endDate, object.PriceType, object.Days, object.Cost, login)
     if err != nil {
         return err
     }

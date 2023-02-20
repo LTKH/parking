@@ -116,6 +116,8 @@ type Check struct {
     PlaceNumber      int                     `json:"placeNumber"`
     CheckNumber      int                     `json:"checkNumber"`
     WriteDate        time.Time               `json:"writeDate"`
+    StartDate        time.Time               `json:"startDate"`
+    EndDate          time.Time               `json:"endDate"`
     TotalCost        float32                 `json:"totalCost"`
     NumOfDays        int                     `json:"numOfDays"`
     UserName         string                  `json:"userName"`
