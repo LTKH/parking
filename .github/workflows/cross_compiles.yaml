@@ -19,12 +19,7 @@ jobs:
           sudo apt-get install gcc-multilib g++-multilib gcc-mingw-w64 mingw-w64-common mingw-w64-i686-dev mingw-w64-x86-64-dev
       - name: Parking build
         run: |
-          go build -o parking64.exe parking.go
-        env:
-          GOOS: windows
-          GOARCH: amd64
-          CGO_ENABLED: 1 
-          CC: i686-w64-mingw32-gcc
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
       - name: Webview build
         run: |
           go build -o webview.exe webview.go
