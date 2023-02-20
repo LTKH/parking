@@ -115,11 +115,11 @@ func main() {
         Description: "Car parking service",
         Executable:  "parking64.exe",
         WorkingDirectory: exPath,
-        Option: service.KeyValue{
-            "OnFailure": "restart", 
-            "-config.file": exPath+"\\parking.yml",
-            "-log.file": exPath+"\\parking.log",
-            "-web.dir": exPath+"\\web",
+        Option: service.KeyValue{ "OnFailure": "restart" },
+        Arguments: []string{
+            "--config.file", exPath+"\\parking.yml",
+            "--log.file", exPath+"\\parking.log",
+            "--web.dir", exPath+"\\web",
         },
     }
 
