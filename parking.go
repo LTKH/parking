@@ -16,8 +16,8 @@ import (
 var (
     logger service.Logger
     cfFile  = flag.String("config.file", "parking.yml", "config file")
-    webDir  = flag.String("web.dir", "web", "web directory")
     lgFile  = flag.String("log.file", "parking.log", "log file")
+    webDir  = flag.String("web.dir", "web", "web directory")
     parkSrv = flag.String("service", "", "operate on the service (windows only)")
     mdbFile = flag.String("mdb.file", "", "mdb file (for migration)")
 )
@@ -88,6 +88,14 @@ func main() {
     // Command-line flag parsing
     flag.Parse()
 
+    // Parking path
+    ex, err := os.Executable()
+    if err != nil {
+        log.Fatalf("[error] %v", err)
+    }
+    exPath := filepath.Dir(ex)
+    os.Chdir(exPath)
+
     // Start migration
     if *mdbFile != "" {
         cfg, err := config.New("parking.yml")
@@ -101,13 +109,6 @@ func main() {
         os.Exit(0)
     }
 
-    // Parking path
-    ex, err := os.Executable()
-    if err != nil {
-        log.Fatalf("[error] %v", err)
-    }
-    exPath := filepath.Dir(ex)
-
     svcConfig := &service.Config{
         Name:        "Parking",
         DisplayName: "Parking",
@@ -115,11 +116,6 @@ func main() {
         Executable:  "parking64.exe",
         WorkingDirectory: exPath,
         Option: service.KeyValue{ "OnFailure": "restart" },
-        Arguments: []string{
-            "--config.file", exPath+"\\parking.yml",
-            "--log.file", exPath+"\\parking.log",
-            "--web.dir", exPath+"\\web",
-        },
     }
 
     prg := &program{}
