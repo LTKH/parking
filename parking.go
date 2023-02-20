@@ -24,17 +24,10 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
-    // Parking path
-    ex, err := os.Executable()
-    if err != nil {
-        log.Fatalf("[error] %v", err)
-    }
-    exPath := filepath.Dir(ex)
-
 	// Command-line flag parsing
-    cfFile         := flag.String("config.file", exPath+"/parking.yml", "config file")
-    webDir         := flag.String("web.dir", exPath+"/web", "web directory")
-    lgFile         := flag.String("log.file", exPath+"/parking.log", "log file")
+    cfFile         := flag.String("config.file", "parking.yml", "config file")
+    webDir         := flag.String("web.dir", "web", "web directory")
+    lgFile         := flag.String("log.file", "parking.log", "log file")
     mdbFile        := flag.String("mdb.file", "", "mdb file")
     flag.Parse()
 	
@@ -100,23 +93,52 @@ func (p *program) Stop(s service.Service) error {
 }
 
 func main() {
-	svcConfig := &service.Config{
-		Name:        "Parking",
-		DisplayName: "Parking",
-		Description: "",
-	}
+    // Command-line flag parsing
+    daemon := flag.Bool("daemon", false, "daemon mode")
+    flag.Parse()
 
-	prg := &program{}
-	s, err := service.New(prg, svcConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-	logger, err = s.Logger(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = s.Run()
-	if err != nil {
-		logger.Error(err)
-	}
+    // Parking path
+    ex, err := os.Executable()
+    if err != nil {
+        log.Fatalf("[error] %v", err)
+    }
+    exPath := filepath.Dir(ex)
+
+    svcConfig := &service.Config{
+        Name:        "Parking",
+        DisplayName: "Parking",
+        Description: "Car parking service",
+        Executable:  "parking.exe",
+        WorkingDirectory: exPath,
+        Option: service.KeyValue{"OnFailure": "restart"},
+    }
+
+    prg := &program{}
+    s, err := service.New(prg, svcConfig)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    if *daemon {
+        logger, err := s.Logger(nil)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        err = s.Run()
+        if err != nil {
+        	logger.Error(err)
+        }
+
+    } else {
+        err = service.Control(s, "install")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        err = service.Control(s, "start")
+        if err != nil {
+            log.Fatal(err)
+        }
+    }  
 }
