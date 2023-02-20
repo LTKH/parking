@@ -22,10 +22,7 @@ jobs:
           GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
       - name: Webview build
         run: |
-          go build -o webview.exe webview.go
-        env:
-          GOOS: windows
-          GOARCH: amd64
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o webview.exe webview.go
       - name: Create zip archive
         run: |
           zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe webview.exe web parking.yml install.cmd parking.url
