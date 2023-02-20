@@ -8,7 +8,7 @@ db:
   client:           "sqlite3"
   conn_string:      "parking.db"
 
-#window:
-#  width: 1000
-#  height: 800
-#  navigate: "http://localhost:8800/index.html"
+window:
+  width: 1300
+  height: 1000
+  navigate: "http://localhost:8000/index.html"
