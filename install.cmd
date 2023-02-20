@@ -1,4 +1,3 @@
-sc stop Parking
-sc create Parking binpath="c:\Parking\parking64.exe" start=auto
-sc start Parking
-start http://localhost:8000
+parking64.exe --service install
+parking64.exe --service start
+pause

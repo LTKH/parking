@@ -25,10 +25,9 @@ func (p *program) Start(s service.Service) error {
 
 func (p *program) run() {
 	// Command-line flag parsing
-    cfFile         := flag.String("config.file", "parking.yml", "config file")
-    webDir         := flag.String("web.dir", "web", "web directory")
-    lgFile         := flag.String("log.file", "parking.log", "log file")
-    mdbFile        := flag.String("mdb.file", "", "mdb file")
+    cfFile  := flag.String("config.file", "parking.yml", "config file")
+    webDir  := flag.String("web.dir", "web", "web directory")
+    lgFile  := flag.String("log.file", "parking.log", "log file")
     flag.Parse()
 	
 	// Logging settings
@@ -50,14 +49,6 @@ func (p *program) run() {
 
     if cfg.Global.WebDir == "" {
         cfg.Global.WebDir = *webDir
-    }
-
-    // Start migration
-    if *mdbFile != "" {
-        if err := migration.Start(*mdbFile, cfg.DB); err != nil {
-            log.Fatalf("[error] %v", err)
-        }
-        os.Exit(0)
     }
 
     // Creating api
@@ -94,8 +85,22 @@ func (p *program) Stop(s service.Service) error {
 
 func main() {
     // Command-line flag parsing
-    daemon := flag.Bool("daemon", false, "daemon mode")
+    parkSrv := flag.String("service", "", "operate on the service (windows only)")
+    mdbFile := flag.String("mdb.file", "", "mdb file (for migration)")
     flag.Parse()
+
+    // Start migration
+    if *mdbFile != "" {
+        cfg, err := config.New("parking.yml")
+        if err != nil {
+            log.Fatalf("[error] %v", err)
+        }
+
+        if err := migration.Start(*mdbFile, cfg.DB); err != nil {
+            log.Fatalf("[error] %v", err)
+        }
+        os.Exit(0)
+    }
 
     // Parking path
     ex, err := os.Executable()
@@ -108,7 +113,7 @@ func main() {
         Name:        "Parking",
         DisplayName: "Parking",
         Description: "Car parking service",
-        Executable:  "parking.exe",
+        Executable:  "parking64.exe",
         WorkingDirectory: exPath,
         Option: service.KeyValue{"OnFailure": "restart"},
     }
@@ -119,7 +124,12 @@ func main() {
         log.Fatal(err)
     }
 
-    if *daemon {
+    if *parkSrv != "" {
+        err = service.Control(s, *parkSrv)
+        if err != nil {
+            log.Fatal(err)
+        }
+    } else {
         logger, err := s.Logger(nil)
         if err != nil {
             log.Fatal(err)
@@ -128,17 +138,6 @@ func main() {
         err = s.Run()
         if err != nil {
         	logger.Error(err)
-        }
-
-    } else {
-        err = service.Control(s, "install")
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        err = service.Control(s, "start")
-        if err != nil {
-            log.Fatal(err)
         }
     }  
 }
