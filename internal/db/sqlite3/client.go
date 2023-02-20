@@ -89,6 +89,14 @@ func (db *Client) CreateTables() error {
             totalCost     float,
             userName      bigint(20) default 0
         );
+        create table if not exists users (
+            id            varchar(100) primary key,
+            idOrg         bigint(20) not null,
+            password      varchar(100) not null,
+            fullName      varchar(250) not null,
+            address       varchar(1500) default '',
+            telephone     varchar(100) default ''
+        );
         create table if not exists main (
             id            bigint(20) primary key,
             idUser        varchar(100) not null,
@@ -97,13 +105,10 @@ func (db *Client) CreateTables() error {
             address       varchar(1500) default '',
             telephone     varchar(100) default ''
         );
-        create table if not exists users (
-            id            varchar(100) primary key,
-            idOrg         bigint(20) not null,
-            password      varchar(100) not null,
-            fullName      varchar(250) not null,
-            address       varchar(1500) default '',
-            telephone     varchar(100) default ''
+        insert or ignore into main (
+            id, idUser, name, fullName
+        ) values (
+            0, "admin", "Name", "FullName"
         );
     `)
 
