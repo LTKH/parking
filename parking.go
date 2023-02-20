@@ -13,7 +13,14 @@ import (
     "github.com/ltkh/parking/internal/migration"
 )
 
-var logger service.Logger
+var (
+    logger service.Logger
+    cfFile  = flag.String("config.file", "parking.yml", "config file")
+    webDir  = flag.String("web.dir", "web", "web directory")
+    lgFile  = flag.String("log.file", "parking.log", "log file")
+    parkSrv = flag.String("service", "", "operate on the service (windows only)")
+    mdbFile = flag.String("mdb.file", "", "mdb file (for migration)")
+)
 
 type program struct{}
 
@@ -23,13 +30,7 @@ func (p *program) Start(s service.Service) error {
 	return nil
 }
 
-func (p *program) run() {
-	// Command-line flag parsing
-    cfFile  := flag.String("config.file", "parking.yml", "config file")
-    webDir  := flag.String("web.dir", "web", "web directory")
-    lgFile  := flag.String("log.file", "parking.log", "log file")
-    flag.Parse()
-	
+func (p *program) run() {	
 	// Logging settings
     if *lgFile != "" {
         log.SetOutput(&lumberjack.Logger{
@@ -85,8 +86,6 @@ func (p *program) Stop(s service.Service) error {
 
 func main() {
     // Command-line flag parsing
-    parkSrv := flag.String("service", "", "operate on the service (windows only)")
-    mdbFile := flag.String("mdb.file", "", "mdb file (for migration)")
     flag.Parse()
 
     // Start migration
