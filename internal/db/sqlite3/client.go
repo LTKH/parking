@@ -553,7 +553,7 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
  
     chsql := `
         insert into checks (id,idOrg,carNumber,carBrand,carColor,placeNumber,ownerFullName,checkNumber,writeDate,startDate,endDate,priceType,numOfDays,totalCost,userName) 
-        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(checkNumber)+1 from checks),?,?,?,?,?,?,?)
+        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(ifnull(checkNumber, 0))+1 from checks),?,?,?,?,?,?,?)
     `
     _, err := db.client.Exec(chsql, idCheck, 0, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, endDate, object.PriceType, object.Days, object.Cost, login)
     if err != nil {
