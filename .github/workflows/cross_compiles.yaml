@@ -16,16 +16,14 @@ jobs:
         uses: actions/setup-go@v3
       - name: GCC multilib
         run: |
-          sudo apt-get install gcc-multilib g++-multilib gcc-mingw-w64 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 mingw-w64-common mingw-w64-i686-dev mingw-w64-x86-64-dev
-      #- name: Parking build
-      #  run: |
-      #    GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
-      - name: Webview build
+          sudo apt-get install gcc-mingw-w64
+      #gcc-multilib g++-multilib gcc-mingw-w64 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 mingw-w64-common mingw-w64-i686-dev mingw-w64-x86-64-dev
+      - name: Parking build
         run: |
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -buildmode=c-shared -o webview.exe webview.go
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
       - name: Create zip archive
         run: |
-          zip -r parking-${{ github.ref_name }}_windows_amd64.zip webview.exe web parking.yml install.cmd parking.url
+          zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe web parking.yml install.cmd parking.url
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
