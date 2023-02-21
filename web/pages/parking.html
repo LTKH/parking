@@ -464,6 +464,8 @@
                 { title: "Место", field: "placeNumber", width: 80 },
                 { title: "Оплата", field: "payment" },
             ],
+            exportDataType: $(this).val(),
+            exportTypes: ['csv', 'txt', 'excel', 'pdf'],
             contextMenu: '#context-menu',
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "exit"){
