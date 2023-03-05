@@ -114,7 +114,7 @@ func main() {
         Name:        "Parking",
         DisplayName: "Parking",
         Description: "Car parking service",
-        Executable:  "service.exe",
+        Executable:  "parking64.exe",
         WorkingDirectory: exPath,
         Option: service.KeyValue{ "OnFailure": "restart" },
     }
