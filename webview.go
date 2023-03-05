@@ -20,7 +20,7 @@ var (
 )
 
 func main() {
-        // Logging settings
+    // Logging settings
     if *lgFile != "" {
         log.SetOutput(&lumberjack.Logger{
             Filename:   *lgFile,
@@ -82,6 +82,6 @@ func main() {
     defer w.Destroy()
     w.SetTitle("Parking")
     w.SetSize(cfg.Window.Width, cfg.Window.Height, webview.HintNone)
-    w.Navigate("http://localhost:8000")
+    w.Navigate(cfg.Window.Navigate)
     w.Run()
 }

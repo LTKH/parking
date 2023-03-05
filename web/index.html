@@ -95,7 +95,7 @@
 
         function loadPage(url) {
             $.ajax({
-                url: url,
+                url: url + "?timestamp=" + Math.floor(Date.now() / 1000),
                 method: "GET"
             }).done(function(html) {
                 $("#content").html(html);
