@@ -20,10 +20,13 @@ jobs:
       - name: Parking build
         run: |
           go build -o parking.exe parking.go
+      - name: Service build
+        run: |
+          go build -o service.exe service.go
       - name: Create zip archive
         uses: vimtor/action-zip@v1
         with:
-          files: parking.exe parking.yml web
+          files: parking.exe service.exe parking.yml web
           recursive: false
           dest: parking-${{ github.ref_name }}_windows_amd64.zip
       #- name: GCC multilib

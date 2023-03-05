@@ -20,16 +20,8 @@ var (
 )
 
 func main() {
-    // Logging settings
-    if *lgFile != "" {
-        log.SetOutput(&lumberjack.Logger{
-            Filename:   *lgFile,
-            MaxSize:    10,      // megabytes after which new file is created
-            MaxBackups: 3,       // number of backups
-            MaxAge:     10,      // days
-            Compress:   true,    // using gzip
-        })
-    }
+    // Command-line flag parsing
+    flag.Parse()
 
     // Loading configuration file
     cfg, err := config.New(*cfFile)
@@ -43,6 +35,17 @@ func main() {
             log.Fatalf("[error] %v", err)
         }
         os.Exit(0)
+    }
+
+    // Logging settings
+    if *lgFile != "" {
+        log.SetOutput(&lumberjack.Logger{
+            Filename:   *lgFile,
+            MaxSize:    10,      // megabytes after which new file is created
+            MaxBackups: 3,       // number of backups
+            MaxAge:     10,      // days
+            Compress:   true,    // using gzip
+        })
     }
 
     if cfg.Global.WebDir == "" {
