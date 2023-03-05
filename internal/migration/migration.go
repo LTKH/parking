@@ -117,7 +117,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 _, err = db.Exec(
                     "replace into places (id,idOrg,number,description) values (?,?,?,?)", 
                     fields[0], 
-                    0,
+                    1,
                     fields[0], 
                     DecodeWindows1251(fields[1]),
                 )
@@ -130,7 +130,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 _, err = db.Exec(
                     "replace into prices (id,idOrg,carType,priceType,numOfDays,totalCost) values (?,?,?,?,?,?)", 
                     fields[0],
-                    0,
+                    1,
                     DecodeWindows1251(fields[1]),
                     DecodeWindows1251(fields[2]),
                     fields[3],
@@ -160,7 +160,7 @@ func Start(mdbfile string, conf *config.DB) error {
                     "replace into checks (id,checkNumber,idOrg,carNumber,ownerFullName,startDate,writeDate,totalCost,numOfDays,priceType,placeNumber,userName) values (?,?,?,?,?,?,?,?,?,?,?,?)",
                     idCheck[1],                   //ID
                     fields[1],                    //Nomer
-                    0,
+                    1,
                     DecodeWindows1251(fields[2]), //AvtoNomer
                     "",
                     startDate,
@@ -212,7 +212,7 @@ func Start(mdbfile string, conf *config.DB) error {
                 _, err = db.Exec(
                     "replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate,status) values (?,?,?,?,?,?,?,?,?,?)", 
                     DecodeWindows1251(fields[1]),
-                    0,
+                    1,
                     DecodeWindows1251(fields[1]),
                     idOwner[1],
                     idCheck[1],
@@ -237,7 +237,7 @@ func Start(mdbfile string, conf *config.DB) error {
 
                 _, err = db.Exec(
                     "insert into main (id,idUser,name,fullName,address,telephone) values (?,?,?,?,?,?)",
-                    0,
+                    1,
                     "admin",
                     DecodeWindows1251(fields[1]),
                     DecodeWindows1251(fields[4]),

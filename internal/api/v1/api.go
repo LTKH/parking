@@ -123,6 +123,10 @@ func New(conf *config.Config) (*Api, error) {
     user.Id = conf.Global.Security.AdminUser
     user.Password = getHash(conf.Global.Security.AdminPassword)
 
+    if user.IdOrg == 0 {
+        user.IdOrg = 1
+    }
+
     if err := client.SaveUser(user); err != nil {
         return &Api{}, err
     }
@@ -403,6 +407,19 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
 
             case "users":
                 rows, err := db.DbClient.LoadUsers(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "checks":
+                rows, err := db.DbClient.LoadChecks(*api.db, row)
                 if err != nil {
                     log.Printf("[error] %v - %s", err, r.URL.Path)
                     w.WriteHeader(500)
