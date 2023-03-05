@@ -17,13 +17,13 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.20.1
-      #- name: Set up MinGW
-      #  uses: egor-tensin/setup-mingw@v2
-      #  with:
-      #    platform: x64
-      - name: Webview build
+      - name: Parking build
         run: |
-          go build -o parking.exe webview.go
+          go build -o parking.exe parking.go
+      - uses: vimtor/action-zip@v1
+        with:
+          files: parking.exe web parking.yml
+          dest: parking-${{ github.ref_name }}_windows_amd64.zip
       #- name: GCC multilib
       #  run: |
       #    sudo apt-get install gcc-mingw-w64
@@ -35,7 +35,7 @@ jobs:
       #    GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking.exe webview.go
       #- name: Create zip archive
       #  run: |
-      #    zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe web parking.yml install.cmd parking.url
+      #    zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe web parking.yml
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

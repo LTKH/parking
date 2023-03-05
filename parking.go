@@ -5,8 +5,7 @@ import (
     "log"
     "flag"
     "net/http"
-    "path/filepath"
-    "github.com/kardianos/service"
+    "github.com/webview/webview"
     "gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
     "github.com/ltkh/parking/internal/api/v1"
@@ -14,23 +13,13 @@ import (
 )
 
 var (
-    logger service.Logger
     cfFile  = flag.String("config.file", "parking.yml", "config file")
     lgFile  = flag.String("log.file", "parking.log", "log file")
     webDir  = flag.String("web.dir", "web", "web directory")
-    parkSrv = flag.String("service", "", "operate on the service (windows only)")
     mdbFile = flag.String("mdb.file", "", "mdb file (for migration)")
 )
 
-type program struct{}
-
-func (p *program) Start(s service.Service) error {
-    // Start should not block. Do the actual work async.
-    go p.run()
-    return nil
-}
-
-func (p *program) run() {    
+func main() {
     // Logging settings
     if *lgFile != "" {
         log.SetOutput(&lumberjack.Logger{
@@ -46,6 +35,14 @@ func (p *program) run() {
     cfg, err := config.New(*cfFile)
     if err != nil {
         log.Fatalf("[error] %v", err)
+    }
+
+    // Start migration
+    if *mdbFile != "" {
+        if err := migration.Start(*mdbFile, cfg.DB); err != nil {
+            log.Fatalf("[error] %v", err)
+        }
+        os.Exit(0)
     }
 
     if cfg.Global.WebDir == "" {
@@ -74,71 +71,17 @@ func (p *program) run() {
         http.ServeFile(w, r, cfg.Global.WebDir+"/"+r.URL.Path)
     })
 
-    // Enabled listen port
-    if err := http.ListenAndServe(cfg.Global.ListenAddr, nil); err != nil {
-        log.Fatalf("[error] %v", err)
-    }
-}
-
-func (p *program) Stop(s service.Service) error {
-    // Stop should not block. Return with a few seconds.
-    return nil
-}
-
-func main() {
-    // Command-line flag parsing
-    flag.Parse()
-
-    // Parking path
-    ex, err := os.Executable()
-    if err != nil {
-        log.Fatalf("[error] %v", err)
-    }
-    exPath := filepath.Dir(ex)
-    os.Chdir(exPath)
-
-    // Start migration
-    if *mdbFile != "" {
-        cfg, err := config.New("parking.yml")
-        if err != nil {
+    go func() {
+        // Enabled listen port
+        if err := http.ListenAndServe(cfg.Global.ListenAddr, nil); err != nil {
             log.Fatalf("[error] %v", err)
         }
+    }()
 
-        if err := migration.Start(*mdbFile, cfg.DB); err != nil {
-            log.Fatalf("[error] %v", err)
-        }
-        os.Exit(0)
-    }
-
-    svcConfig := &service.Config{
-        Name:        "Parking",
-        DisplayName: "Parking",
-        Description: "Car parking service",
-        Executable:  "parking64.exe",
-        WorkingDirectory: exPath,
-        Option: service.KeyValue{ "OnFailure": "restart" },
-    }
-
-    prg := &program{}
-    s, err := service.New(prg, svcConfig)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    if *parkSrv != "" {
-        err = service.Control(s, *parkSrv)
-        if err != nil {
-            log.Fatal(err)
-        }
-    } else {
-        logger, err := s.Logger(nil)
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        err = s.Run()
-        if err != nil {
-            logger.Error(err)
-        }
-    }  
+    w := webview.New(false)
+    defer w.Destroy()
+    w.SetTitle("Parking")
+    w.SetSize(cfg.Window.Width, cfg.Window.Height, webview.HintNone)
+    w.Navigate(cfg.Window.Navigate)
+    w.Run()
 }
