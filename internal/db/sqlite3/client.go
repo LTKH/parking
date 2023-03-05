@@ -68,8 +68,8 @@ func (db *Client) CreateTables() error {
             idOrg         bigint(20) not null,
             carType       varchar(100),
             priceType     varchar(100),
-            numOfDays     integer,
-            totalCost     float
+            numOfDays     integer default 0,
+            totalCost     float default 0
         );
         create table if not exists checks (
             id            bigint(20) primary key,
@@ -85,8 +85,8 @@ func (db *Client) CreateTables() error {
             writeDate     bigint(20) default 0,
             startDate     bigint(20) default 0,
             endDate       bigint(20) default 0,
-            numOfDays     integer,
-            totalCost     float,
+            numOfDays     integer default 0,
+            totalCost     float default 0,
             userName      bigint(20) default 0
         );
         create table if not exists users (
@@ -105,11 +105,6 @@ func (db *Client) CreateTables() error {
             address       varchar(1500) default '',
             telephone     varchar(100) default ''
         );
-        insert or ignore into main (
-            id, idUser, name, fullName
-        ) values (
-            0, "admin", "Name", "FullName"
-        );
     `)
 
     if err != nil {
@@ -117,6 +112,24 @@ func (db *Client) CreateTables() error {
     }
 
     return nil
+}
+
+func (db *Client) LoadUsers(values map[string]interface{}) ([]config.User, error) {
+    result := []config.User{}
+    rows, err := db.client.Query("select * from users order by id")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var user config.User
+        err := rows.Scan(&user.Id, &user.IdOrg, &user.Password, &user.FullName, &user.Address, &user.Telephone)
+        if err != nil { return nil, err }
+        result = append(result, user) 
+    }
+
+    return result, nil
 }
 
 func (db *Client) GetUser(login string) (config.User, error) {
@@ -129,319 +142,208 @@ func (db *Client) GetUser(login string) (config.User, error) {
     return user, nil
 }
 
-func (db *Client) SetUser(user config.User) error {
-    _, err := db.client.Exec("replace into users (id,idOrg,password,fullName) values (?,?,?,?)", user.Id, user.IdOrg, user.Password, user.FullName)
+func (db *Client) SaveUser(user config.User) error {
+    ursql := "replace into users (id,idOrg,password,fullName,address,telephone) values (?,?,?,?,?,?)"
+    _, err := db.client.Exec(ursql, user.Id, user.IdOrg, &user.Password, &user.FullName, &user.Address, &user.Telephone)
     if err != nil {
         return err
     }
     return nil
 }
 
-func (db *Client) LoadObjects(table string, values map[string]interface{}) ([]interface{}, error) {
-    result := []interface{}{}
+func (db *Client) LoadCars(values map[string]interface{}) ([]config.Car, error) {
+    result := []config.Car{}
+    rows, err := db.client.Query("select * from cars order by id")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-    switch table {
-	    case "cars":
-            rows, err := db.client.Query("select * from cars order by id")
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var car config.Car
-                err := rows.Scan(
-                    &car.Id, 
-                    &car.Number, 
-                    &car.Brand, 
-                    &car.Color, 
-                    &car.Note,
-                )
-                if err != nil { return nil, err }
-                result = append(result, car) 
-            }
-
-        case "owners":
-            rows, err := db.client.Query("select * from owners order by id")
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var owner config.Owner
-                err := rows.Scan(
-                    &owner.Id, 
-                    &owner.IdCar, 
-                    &owner.FullName, 
-                    &owner.Telephone, 
-                    &owner.Address, 
-                    &owner.Document,
-                )
-                if err != nil { return nil, err }
-                result = append(result, owner) 
-            }
-
-        case "prices":
-            rows, err := db.client.Query("select * from prices order by id")
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var price config.Price
-                err := rows.Scan(
-                    &price.Id, 
-                    &price.IdOrg, 
-                    &price.CarType, 
-                    &price.PriceType, 
-                    &price.NumOfDays, 
-                    &price.TotalCost,
-                )
-                if err != nil { return nil, err }
-                result = append(result, price)
-            }
-
-        case "places":
-            endDate := int64(0)
-
-            rows, err := db.client.Query(`
-                select 
-                    places.id,
-                    places.idOrg,
-                    ifnull(parking.id, ''),
-                    ifnull(parking.endDate, 0),
-                    places.number,
-                    places.description 
-                from places 
-                left outer join parking on parking.idPlace = places.id
-                order by places.number
-            `)
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var object config.Place
-                err := rows.Scan(
-                    &object.Id, 
-                    &object.IdOrg, 
-                    &object.IdPark, 
-                    &endDate, 
-                    &object.Number, 
-                    &object.Description,
-                )
-                if err != nil { return nil, err }
-                object.EndDate = time.Unix(endDate, 0)
-                result = append(result, object) 
-            }
-
-        case "main":
-            rows, err := db.client.Query("select * from main order by id")
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var main config.Main
-                err := rows.Scan(
-                    &main.Id, 
-                    &main.IdUser, 
-                    &main.Name, 
-                    &main.FullName, 
-                    &main.Address, 
-                    &main.Telephone,
-                )
-                if err != nil { return nil, err }
-                result = append(result, main)
-            }
-    
-        case "checks":
-            writeDate := int64(0)
-            startDate := values["startDate"].(int64)
-            endDate := values["endDate"].(int64)
-
-            rows, err := db.client.Query(`
-                select 
-                    checks.id as id, 
-                    checks.carNumber as carNumber, 
-                    checks.carBrand as carBrand,
-                    checks.carColor as carColor,
-                    ifnull(checks.placeNumber, '') as placeNumber,
-                    ifnull(checks.ownerFullName, '') as ownerFullName,
-                    ifnull(checks.checkNumber, 0) as checkNumber,
-                    checks.priceType as priceType,
-                    checks.writeDate as writeDate,
-                    checks.totalCost as totalCost,
-                    ifnull(checks.userName, '') as userName
-                from checks
-                where checks.writeDate >= ? and checks.writeDate < ?
-                order by checks.writeDate
-            `, startDate, endDate)
-            if err != nil {
-                return nil, err
-            }
-            defer rows.Close()
-
-            for rows.Next() {
-                var object config.Check
-                err := rows.Scan(
-                    &object.Id, 
-                    &object.CarNumber, 
-                    &object.CarBrand, 
-                    &object.CarColor, 
-                    &object.PlaceNumber, 
-                    &object.FullName, 
-                    &object.CheckNumber, 
-                    &object.PriceType, 
-                    &writeDate, 
-                    &object.TotalCost, 
-                    &object.UserName,
-                )
-                if err != nil { return nil, err }
-                object.WriteDate = time.Unix(writeDate, 0)
-                result = append(result, object) 
-            }
+    for rows.Next() {
+        var car config.Car
+        err := rows.Scan(&car.Id, &car.Number, &car.Brand, &car.Color, &car.Note)
+        if err != nil { return nil, err }
+        result = append(result, car) 
     }
 
     return result, nil
-    
 }
 
-func (db *Client) SaveObject(table string, object map[string]interface{}) error {
-
-    switch table {
-        case "places":
-            if object["id"] == "" {
-                object["id"] = time.Now().UTC().Unix()
-            }
-            plsql := "replace into places (id,idOrg,number,description) values (?,?,?,?)"
-            _, err := db.client.Exec(plsql, object["id"], 0, object["number"], object["description"])
-            if err != nil {
-                return err
-            }
-
-        case "cars":
-            if object["id"] == "" {
-                object["id"] = object["number"]
-            }
-            crsql := "replace into cars (id,number,brand,color,note) values (?,?,?,?,?)"
-            _, err := db.client.Exec(crsql, object["id"], object["number"], object["brand"], object["color"], object["note"])
-            if err != nil {
-                return err
-            }
-
-        case "owners":
-            if object["id"] == "" {
-                object["id"] = object["telephone"]
-            }
-            owsql := "replace into owners (id,idCar,fullName,telephone,address,document) values (?,?,?,?,?,?)"
-            _, err := db.client.Exec(owsql, object["id"], object["idCar"], object["fullName"], object["telephone"], object["address"], object["document"])
-            if err != nil {
-                return err
-            }
-
-        case "prices":
-            if object["id"] == "" {
-                object["id"] = time.Now().UTC().Unix()
-            }
-            prsql := "replace into prices (id,idOrg,carType,priceType,numOfDays,totalCost) values (?,?,?,?,?,?)"
-            _, err := db.client.Exec(prsql, object["id"], 0, object["carType"], object["priceType"], object["numOfDays"], object["totalCost"])
-            if err != nil {
-                return err
-            }
-
-        case "main":
-            if object["id"] == "" {
-                object["id"] = time.Now().UTC().Unix()
-            }
-            mnsql := "replace into main (id,idUser,name,fullName,telephone,address) values (?,?,?,?,?,?)"
-            _, err := db.client.Exec(mnsql, object["id"], 0, object["name"], object["fullName"], object["telephone"], object["address"])
-            if err != nil {
-                return err
-            }
+func (db *Client) SaveCar(object config.Car) error {
+    if object.Id == "" {
+        object.Id = object.Number
     }
-
+    crsql := "replace into cars (id,number,brand,color,note) values (?,?,?,?,?)"
+    _, err := db.client.Exec(crsql, object.Id, object.Number, object.Brand, object.Color, object.Note)
+    if err != nil {
+        return err
+    }
     return nil
 }
 
-func (db *Client) DeleteObject(table string, id interface{}) error {
-    switch table {
-        case "cars","main","owners","prices","places":
-            stmt, err := db.client.Prepare(fmt.Sprintf("delete from %s where id = ?", table))
-            if err != nil {
-                return err
-            }
-            defer stmt.Close()
+func (db *Client) LoadOwners(values map[string]interface{}) ([]config.Owner, error) {
+    result := []config.Owner{}
+    rows, err := db.client.Query("select * from owners order by id")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-            _, err = stmt.Exec(id)
-            if err != nil {
-                return err
-            }
+    for rows.Next() {
+        var owner config.Owner
+        err := rows.Scan(&owner.Id, &owner.IdCar, &owner.FullName, &owner.Telephone, &owner.Address, &owner.Document)
+        if err != nil { return nil, err }
+        result = append(result, owner) 
     }
 
+    return result, nil
+}
+
+func (db *Client) SaveOwner(object config.Owner) error {
+    if object.Id == "" {
+        object.Id = object.Telephone
+    }
+    owsql := "replace into owners (id,idCar,fullName,telephone,address,document) values (?,?,?,?,?,?)"
+    _, err := db.client.Exec(owsql, object.Id, object.IdCar, object.FullName, object.Telephone, object.Address, object.Document)
+    if err != nil {
+        return err
+    }
     return nil
 }
 
-func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
-    var writeDate int64
-    var startDate int64
-    var endDate int64
+func (db *Client) LoadPlaces(values map[string]interface{}) ([]config.Place, error) {
+    result := []config.Place{}
+    endDate := int64(0)
 
-    row := db.client.QueryRow(`
+    rows, err := db.client.Query(`
         select 
-            checks.id as id,
-            checks.carNumber as carNumber, 
-            checks.carBrand as carBrand,
-            checks.carColor as carColor,
-            ifnull(checks.placeNumber, '') as placeNumber,
-            ifnull(checks.ownerFullName, '') as ownerFullName,
-            ifnull(checks.checkNumber, 0) as checkNumber,
-            checks.priceType as priceType,
-            checks.writeDate as writeDate,
-            checks.startDate as startDate,
-            checks.endDate as endDate,
-            checks.totalCost as totalCost,
-            ifnull(checks.numOfDays, 0) as numOfDays,
-            ifnull(checks.userName, '') as userName,
-            ifnull(main.Name, '') as mainName,
-            ifnull(main.FullName, '') as mainFullName,
-            ifnull(main.Address, '') as mainAddress,
-            ifnull(main.Telephone, '') as mainTelephone
-        from checks
-        left outer join main on main.id = (select idOrg from users where id = ?)
-        where checks.id = ?
-    `, login, id)
-    var object config.Check
-    err := row.Scan(
-        &object.Id, 
-        &object.CarNumber, 
-        &object.CarBrand, 
-        &object.CarColor, 
-        &object.PlaceNumber, 
-        &object.FullName, 
-        &object.CheckNumber, 
-        &object.PriceType, 
-        &writeDate, 
-        &startDate, 
-        &endDate,
-        &object.TotalCost, 
-        &object.NumOfDays,
-        &object.UserName,
-        &object.MainName,
-        &object.MainFullName,
-        &object.MainAddress,
-        &object.MainTelephone,
-    )
-    if err != nil { return object, err }
-    object.WriteDate = time.Unix(writeDate, 0)
-    object.StartDate = time.Unix(startDate, 0)
-    object.EndDate = time.Unix(endDate, 0)
+            places.id,
+            places.idOrg,
+            ifnull(parking.id, ''),
+            ifnull(parking.endDate, 0),
+            places.number,
+            places.description 
+        from places 
+        left outer join parking on parking.idPlace = places.id
+        order by places.number
+    `)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-    return object, nil
+    for rows.Next() {
+        var object config.Place
+        err := rows.Scan(&object.Id, &object.IdOrg, &object.IdPark, &endDate, &object.Number, &object.Description)
+        if err != nil { return nil, err }
+        object.EndDate = time.Unix(endDate, 0)
+        result = append(result, object) 
+    }
+
+    return result, nil
+}
+
+func (db *Client) SavePlace(object config.Place) error {
+    if object.Id == 0 {
+        object.Id = time.Now().UTC().Unix()
+    }
+    plsql := "replace into places (id,idOrg,number,description) values (?,?,?,?)"
+    _, err := db.client.Exec(plsql, object.Id, 1, object.Number, object.Description)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func (db *Client) LoadPrices(values map[string]interface{}) ([]config.Price, error) {
+    result := []config.Price{}
+    rows, err := db.client.Query(`
+        select 
+            id,
+            idOrg,
+            carType,
+            priceType,
+            ifnull(numOfDays, 0) numOfDays,
+            ifnull(totalCost, 0) totalCost
+        from prices order by id
+    `)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var price config.Price
+        err := rows.Scan(&price.Id, &price.IdOrg, &price.CarType, &price.PriceType, &price.NumOfDays, &price.TotalCost)
+        if err != nil { return nil, err }
+        result = append(result, price)
+    }
+
+    return result, nil
+}
+
+func (db *Client) SavePrice(object config.Price) error {
+    if object.Id == 0 {
+        object.Id = time.Now().UTC().Unix()
+    }
+    prsql := "replace into prices (id,idOrg,carType,priceType,numOfDays,totalCost) values (?,?,?,?,?,?)"
+    _, err := db.client.Exec(prsql, object.Id, 1, object.CarType, object.PriceType, object.NumOfDays, object.TotalCost)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func (db *Client) LoadMain(values map[string]interface{}) ([]config.Main, error) {
+    result := []config.Main{}
+    rows, err := db.client.Query("select * from main order by id")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var main config.Main
+        err := rows.Scan(&main.Id, &main.IdUser, &main.Name, &main.FullName, &main.Address, &main.Telephone)
+        if err != nil { return nil, err }
+        result = append(result, main)
+    }
+
+    return result, nil
+}
+
+func (db *Client) SaveMain(object config.Main, login string) error {
+    if object.Id == 0 {
+        object.Id = time.Now().UTC().Unix()
+
+        ursql := "update users set idOrg = ? where id = ?"
+        _, err := db.client.Exec(ursql, object.Id, login)
+        if err != nil {
+            return err
+        }
+    }
+    mnsql := "replace into main (id,idUser,name,fullName,telephone,address) values (?,?,?,?,?,?)"
+    _, err := db.client.Exec(mnsql, object.Id, login, object.Name, object.FullName, object.Telephone, object.Address)
+    if err != nil {
+        return err
+    }
+    
+    return nil
+}
+
+func (db *Client) DeleteMain(id interface{}, login string) error {
+    _, err := db.client.Exec("delete from main where id = ?", id)
+    if err != nil {
+        return err
+    }
+
+    ursql := "update users set idOrg = (select ifnull(max(id), 0) from main) where id = ?"
+    _, err = db.client.Exec(ursql, login)
+    if err != nil {
+        return err
+    }
+    
+    return nil
 }
 
 func (db *Client) LoadParking() ([]config.Parking, error) {
@@ -537,11 +439,8 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
             return err
         }
 
-        prsql := `
-            replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate,status) 
-            values (?,?,?,?,?,?,?,?,?,?)
-        `
-        _, err = db.client.Exec(prsql, object.CarNumber, 0, object.CarNumber, object.Telephone, idCheck, object.IdPlace, login, startDate, endDate, 1)
+        prsql := "replace into parking (id,idOrg,idCar,idOwner,idCheck,idPlace,idUser,startDate,endDate,status) values (?,?,?,?,?,?,?,?,?,?)"
+        _, err = db.client.Exec(prsql, object.CarNumber, 1, object.CarNumber, object.Telephone, idCheck, object.IdPlace, login, startDate, endDate, 1)
         if err != nil {
             return err
         }
@@ -558,9 +457,9 @@ func (db *Client) SaveParking(object config.Parking, login string) error {
  
     chsql := `
         insert into checks (id,idOrg,carNumber,carBrand,carColor,placeNumber,ownerFullName,checkNumber,writeDate,startDate,endDate,priceType,numOfDays,totalCost,userName) 
-        values (?,?,?,?,?,(select number from places where id = ?),?,(select max(ifnull(checkNumber, 0))+1 from checks),?,?,?,?,?,?,?)
+        values (?,(select max(idOrg) from users where id = ?),?,?,?,(select number from places where id = ?),?,(select max(ifnull(checkNumber, 0))+1 from checks),?,?,?,?,?,?,?)
     `
-    _, err := db.client.Exec(chsql, idCheck, 0, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, endDate, object.PriceType, object.Days, object.Cost, login)
+    _, err := db.client.Exec(chsql, idCheck, login, object.CarNumber, object.Brand, object.Color, object.IdPlace, object.FullName, writeDate, startDate, endDate, object.PriceType, object.Days, object.Cost, login)
     if err != nil {
         return err
     }
@@ -577,6 +476,106 @@ func (db *Client) DeleteParking(id string, login string) error {
     }
 
     return nil
+}
+
+func (db *Client) LoadChecks(values map[string]interface{}) ([]config.Check, error) {
+    result := []config.Check{}
+    writeDate := int64(0)
+    startDate := values["startDate"].(int64)
+    endDate := values["endDate"].(int64)
+
+    rows, err := db.client.Query(`
+        select 
+            checks.id as id, 
+            checks.carNumber as carNumber, 
+            checks.carBrand as carBrand,
+            checks.carColor as carColor,
+            ifnull(checks.placeNumber, '') as placeNumber,
+            ifnull(checks.ownerFullName, '') as ownerFullName,
+            ifnull(checks.checkNumber, 0) as checkNumber,
+            checks.priceType as priceType,
+            checks.writeDate as writeDate,
+            checks.totalCost as totalCost,
+            ifnull(checks.userName, '') as userName
+        from checks
+        where checks.writeDate >= ? and checks.writeDate < ?
+        order by checks.writeDate
+    `, startDate, endDate)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var object config.Check
+        err := rows.Scan(
+            &object.Id, &object.CarNumber, &object.CarBrand, &object.CarColor, &object.PlaceNumber, &object.FullName, 
+            &object.CheckNumber, &object.PriceType, &writeDate, &object.TotalCost, &object.UserName,
+        )
+        if err != nil { return nil, err }
+        object.WriteDate = time.Unix(writeDate, 0)
+        result = append(result, object) 
+    }
+
+    return result, nil
+}
+
+func (db *Client) LoadCheck(id int64, login string) (interface{}, error) {
+    var writeDate int64
+    var startDate int64
+    var endDate int64
+
+    row := db.client.QueryRow(`
+        select 
+            checks.id as id,
+            checks.carNumber as carNumber, 
+            checks.carBrand as carBrand,
+            checks.carColor as carColor,
+            ifnull(checks.placeNumber, '') as placeNumber,
+            ifnull(checks.ownerFullName, '') as ownerFullName,
+            ifnull(checks.checkNumber, 0) as checkNumber,
+            checks.priceType as priceType,
+            checks.writeDate as writeDate,
+            checks.startDate as startDate,
+            checks.endDate as endDate,
+            ifnull(checks.totalCost, 0) as totalCost,
+            ifnull(checks.numOfDays, 0) as numOfDays,
+            ifnull(checks.userName, '') as userName,
+            ifnull(main.Name, '') as mainName,
+            ifnull(main.FullName, '') as mainFullName,
+            ifnull(main.Address, '') as mainAddress,
+            ifnull(main.Telephone, '') as mainTelephone
+        from checks
+        left outer join main on main.id = (select idOrg from users where id = ?)
+        where checks.id = ?
+    `, login, id)
+    var object config.Check
+    err := row.Scan(
+        &object.Id, 
+        &object.CarNumber, 
+        &object.CarBrand, 
+        &object.CarColor, 
+        &object.PlaceNumber, 
+        &object.FullName, 
+        &object.CheckNumber, 
+        &object.PriceType, 
+        &writeDate, 
+        &startDate, 
+        &endDate,
+        &object.TotalCost, 
+        &object.NumOfDays,
+        &object.UserName,
+        &object.MainName,
+        &object.MainFullName,
+        &object.MainAddress,
+        &object.MainTelephone,
+    )
+    if err != nil { return object, err }
+    object.WriteDate = time.Unix(writeDate, 0)
+    object.StartDate = time.Unix(startDate, 0)
+    object.EndDate = time.Unix(endDate, 0)
+
+    return object, nil
 }
 
 func (db *Client) DeleteOldChecks() (int64, error) {
@@ -598,5 +597,15 @@ func (db *Client) DeleteOldChecks() (int64, error) {
     }
 
     return cnt, nil
+
+}
+
+func (db *Client) DeleteObject(table string, id interface{}) error {
+
+    _, err := db.client.Exec(fmt.Sprintf("delete from %s where id = ?", table), id)
+    if err != nil {
+        return err
+    }
+    return nil
 
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"os"
-	"log"
-	"flag"
-	"net/http"
+    "os"
+    "log"
+    "flag"
+    "net/http"
     "path/filepath"
-	"github.com/kardianos/service"
-	"gopkg.in/natefinch/lumberjack.v2"
+    "github.com/kardianos/service"
+    "gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
     "github.com/ltkh/parking/internal/api/v1"
     "github.com/ltkh/parking/internal/migration"
@@ -25,13 +25,13 @@ var (
 type program struct{}
 
 func (p *program) Start(s service.Service) error {
-	// Start should not block. Do the actual work async.
-	go p.run()
-	return nil
+    // Start should not block. Do the actual work async.
+    go p.run()
+    return nil
 }
 
-func (p *program) run() {	
-	// Logging settings
+func (p *program) run() {    
+    // Logging settings
     if *lgFile != "" {
         log.SetOutput(&lumberjack.Logger{
             Filename:   *lgFile,
@@ -67,6 +67,7 @@ func (p *program) run() {
     http.HandleFunc("/api/v1/prices", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/checks", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/check", apiV1.ApiCheck)
+    http.HandleFunc("/api/v1/users", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/main", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/parking", apiV1.ApiParking)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
@@ -80,8 +81,8 @@ func (p *program) run() {
 }
 
 func (p *program) Stop(s service.Service) error {
-	// Stop should not block. Return with a few seconds.
-	return nil
+    // Stop should not block. Return with a few seconds.
+    return nil
 }
 
 func main() {
@@ -137,7 +138,7 @@ func main() {
 
         err = s.Run()
         if err != nil {
-        	logger.Error(err)
+            logger.Error(err)
         }
     }  
 }

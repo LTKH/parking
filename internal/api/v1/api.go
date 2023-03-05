@@ -119,13 +119,12 @@ func New(conf *config.Config) (*Api, error) {
         }
     }(client)
 
-    user := config.User{
-        Id: conf.Global.Security.AdminUser,
-        IdOrg: 0,
-        Password: getHash(conf.Global.Security.AdminPassword),
-        FullName: conf.Global.Security.AdminUser,
-    }
-    if err := client.SetUser(user); err != nil {
+    user, _ := client.GetUser(conf.Global.Security.AdminUser)
+    user.Id = conf.Global.Security.AdminUser
+    user.Password = getHash(conf.Global.Security.AdminPassword)
+    user.FullName = conf.Global.Security.AdminUser
+
+    if err := client.SaveUser(user); err != nil {
         return &Api{}, err
     }
 
@@ -302,7 +301,7 @@ func (api *Api) ApiUpdate(w http.ResponseWriter, r *http.Request) {
 func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
 
-    _, code, err := authentication(api, r)
+    login, code, err := authentication(api, r)
     if err != nil {
         w.WriteHeader(code)
         w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
@@ -337,18 +336,87 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
             }
         }
 
-        var rows []interface{} 
+        switch res[1] {
+            case "cars":
+                rows, err := db.DbClient.LoadCars(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
 
-        rows, err := db.DbClient.LoadObjects(*api.db, res[1], row)
-        if err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "owners":
+                rows, err := db.DbClient.LoadOwners(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "places":
+                rows, err := db.DbClient.LoadPlaces(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "prices":
+                rows, err := db.DbClient.LoadPrices(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "main":
+                rows, err := db.DbClient.LoadMain(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
+
+            case "users":
+                rows, err := db.DbClient.LoadUsers(*api.db, row)
+                if err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                w.WriteHeader(200)
+                w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+                return
         }
 
-        w.WriteHeader(200)
-        w.Write(encodeResp(&Resp{Status:"success", Data:rows}))
+        w.WriteHeader(204)
         return
     }
 
@@ -362,20 +430,107 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        row := map[string]interface{}{}
+        switch res[1] {
+            case "cars":
+                object := config.Car{}
+                if err := json.Unmarshal(body, &object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
 
-        if err := json.Unmarshal(body, &row); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(400)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
-        }
-        
-        if err := db.DbClient.SaveObject(*api.db, res[1], row); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
+                if err := db.DbClient.SaveCar(*api.db, object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            case "owners":
+                object := config.Owner{}
+                if err := json.Unmarshal(body, &object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                if err := db.DbClient.SaveOwner(*api.db, object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            case "places":
+                object := config.Place{}
+                if err := json.Unmarshal(body, &object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                if err := db.DbClient.SavePlace(*api.db, object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            case "prices":
+                object := config.Price{}
+                if err := json.Unmarshal(body, &object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                if err := db.DbClient.SavePrice(*api.db, object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            case "main":
+                object := config.Main{}
+                if err := json.Unmarshal(body, &object); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                if err := db.DbClient.SaveMain(*api.db, object, login); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            
+            case "users":
+                user := config.User{}
+                if err := json.Unmarshal(body, &user); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(400)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+
+                if user.Password == "" {
+                    usr, err := db.DbClient.GetUser(*api.db, user.Id)
+                    if err == nil {
+                        user.Password = usr.Password
+                    }
+                } else {
+                    user.Password = getHash(user.Password)
+                }
+
+                if err := db.DbClient.SaveUser(*api.db, user); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
         }
 
         w.WriteHeader(200)
@@ -401,12 +556,22 @@ func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
             w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
             return
         }
-        
-        if err := db.DbClient.DeleteObject(*api.db, res[1], row["id"]); err != nil {
-            log.Printf("[error] %v - %s", err, r.URL.Path)
-            w.WriteHeader(500)
-            w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
-            return
+
+        switch res[1] {
+            case "cars","owners","prices","places","users":
+                if err := db.DbClient.DeleteObject(*api.db, res[1], row["id"]); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
+            case "main":
+                if err := db.DbClient.DeleteMain(*api.db, row["id"], login); err != nil {
+                    log.Printf("[error] %v - %s", err, r.URL.Path)
+                    w.WriteHeader(500)
+                    w.Write(encodeResp(&Resp{Status:"error", Error:err.Error()}))
+                    return
+                }
         }
 
         w.WriteHeader(200)

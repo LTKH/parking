@@ -10,7 +10,7 @@
                         <div class="row">
 
                             <div class="col-sm-12">
-                                <table id="myTable" data-pagination-parts="pageInfo" data-height="1000" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
+                                <table id="myTable" data-height="1000" data-pagination-parts="pageInfo" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
                                     <thead></thead>
                                 </table>
                             </div>
@@ -31,37 +31,45 @@
 <ul id="context-menu-table" class="dropdown-menu" style="font-size: 12px;">
     <li data-item="edit"><a class="dropdown-item">Редактировать</a></li>
     <li data-item="delete"><a class="dropdown-item">Удалить</a></li>
-    <!--li data-item="added"><a class="dropdown-item">Добавить</a></li-->
-</ul>
+</ul> 
 
 <!-- Модальное окно -->
 <div id="myModal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Организация</h5>
+                <h5 class="modal-title">Парковочное место</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <form id="form">
-                    <input name="id" type="hidden" class="form-control" style="font-size: 12px;">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Наименование</label>
-                        <input name="name" type="text" class="form-control" id="name" style="font-size: 12px;">
+                    <div class="col-md-4 md-3 mb-3">
+                        <label for="idOrg" class="form-label">Организация</label>
+                        <select name="idOrg" class="form-select" id="idOrg" style="font-size: 12px;">
+                            <option selected disabled value=""></option>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label for="fullName" class="form-label">Руководитель</label>
+                        <label for="login" class="form-label">Логин</label>
+                        <input name="login" type="text" class="form-control" id="login" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">ФИО</label>
                         <input name="fullName" type="text" class="form-control" id="fullName" style="font-size: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="telephone" class="form-label">Телефон</label>
-                        <input name="telephone" type="text" class="form-control" id="telephone" style="font-size: 12px;">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input name="password" type="password" class="form-control" id="password" style="font-size: 12px;">
                     </div>
                     <div class="mb-3">
                         <label for="address" class="form-label">Адрес</label>
                         <input name="address" type="text" class="form-control" id="address" style="font-size: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="telephone" class="form-label">Телефон</label>
+                        <input name="telephone" type="text" class="form-control" id="telephone" style="font-size: 12px;">
                     </div>
                 </form>
             </div>
@@ -74,21 +82,30 @@
 </div>
 
 <script type="text/javascript">
-
     function request(url, method, data) {
         $.ajax({
             url: url,
             method: method,
             data: JSON.stringify(data)
         }).done(function(jsn) {
-            if (method == 'GET'){
+            if (url == '/api/v1/main' && method == 'GET'){
+                $("#myModal select[name='idOrg']").empty();
+                $.each(jsn.data, function(key, value) {
+                    $("#myModal select[name='idOrg']").append($('<option>', {
+                        value: value.id,
+                        text: value.name,
+                    }));
+                });
+            }
+            if (url == '/api/v1/users' && method == 'GET'){
                 $('#myTable').bootstrapTable('load', jsn.data);
             }
-            if (method == 'POST'){
+            if (url == '/api/v1/users' && method == 'POST'){
                 $('#myModal').modal('hide');
+                request("/api/v1/users", "GET");
             }
-            if (method == 'POST' || method == 'DELETE'){
-                request("/api/v1/main", "GET");
+            if (url == '/api/v1/users' && method == 'DELETE'){
+                request("/api/v1/users", "GET");
             }
         }).fail(function(e) { 
             if (e.status == 401 || e.status == 403){
@@ -110,9 +127,10 @@
                 text: 'Add new row',
                 icon: 'bi-plus',
                 event: function () {
-                    $('#myModal input[name="id"]').val('');
-                    $('#myModal input[name="name"]').val('');
+                    $('#myModal input[name="login"]').val('');
+                    $('#myModal select[name="idOrg"]').val('');
                     $('#myModal input[name="fullName"]').val('');
+                    $('#myModal input[name="password"]').val('');
                     $('#myModal input[name="telephone"]').val('');
                     $('#myModal input[name="address"]').val('');
                     $('#myModal').modal('show');
@@ -135,15 +153,15 @@
 
         $('#myModal #save-button').on('click', function () {
             var row = {
-                'id':        Number($('#myModal input[name="id"]').val()),
-                'name':      $('#myModal input[name="name"]').val(),
+                'login':     $('#myModal input[name="login"]').val(),
+                'idOrg':     Number($('#myModal select[name="idOrg"]').val()),
                 'fullName':  $('#myModal input[name="fullName"]').val(),
+                'token':     $('#myModal input[name="password"]').val(),
                 'telephone': $('#myModal input[name="telephone"]').val(),
-                'address':   $('#myModal input[name="address"]').val()
+                'address':   $('#myModal input[name="address"]').val(),
             };
-            
-            request("/api/v1/main", "POST", row);
 
+            request("/api/v1/users", "POST", row);
         });
 
         $('#myTable').bootstrapTable({
@@ -152,28 +170,30 @@
             pageSize: 1000,
             height: 900,
             columns: [
-                { title: "Наименование", field: "name", width: 200 },
-                { title: "Руководитель", field: "fullName", width: 200 },
-                { title: "Телефон", field: "telephone", width: 150 },
-                { title: "Адрес", field: "address"}
+                { title: "Логин", field: "login", width: 100 },
+                { title: "ФИО", field: "fullName", width: 250 },
+                { title: "Адрес", field: "address" },
+                { title: "Телефон", field: "telephone" }
             ],
             contextMenu: '#context-menu-table',
             onContextMenuItem: function(row, e){
                 if(e.data("item") == "edit"){
-                    $('#myModal input[name="id"]').val(row.id);
-                    $('#myModal input[name="name"]').val(row.name);
+                    $('#myModal input[name="login"]').val(row.login);
+                    $('#myModal select[name="idOrg"]').val(row.idOrg).change();
                     $('#myModal input[name="fullName"]').val(row.fullName);
+                    $('#myModal input[name="password"]').val(row.password);
                     $('#myModal input[name="telephone"]').val(row.telephone);
                     $('#myModal input[name="address"]').val(row.address);
                     $('#myModal').modal('show');
                 }
                 if(e.data("item") == "delete"){
-                    request("/api/v1/main", "DELETE", { id: row.id });
+                    request("/api/v1/users", "DELETE", { id: row.login });
                 }
             }
         });
 
         request("/api/v1/main", "GET");
+        request("/api/v1/users", "GET");
 
     });
 </script>

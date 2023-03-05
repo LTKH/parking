@@ -103,6 +103,8 @@ type User struct {
     IdOrg            int64                   `json:"idOrg"`
     Password         string                  `json:"token"`
     FullName         string                  `json:"fullName"`
+    Address          string                  `json:"address"`
+    Telephone        string                  `json:"telephone"`
 }
 
 type Check struct {
@@ -128,7 +130,7 @@ type Check struct {
 }
 
 type Main struct {
-    Id               string                  `json:"id"`
+    Id               int64                   `json:"id"`
     IdUser           string                  `json:"idUser"`
     Name             string                  `json:"name"`
     FullName         string                  `json:"fullName"`
