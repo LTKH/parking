@@ -9,6 +9,6 @@ db:
   conn_string:      "parking.db"
 
 window:
-  width: 1300
+  width: 1200
   height: 1000
   navigate: "http://localhost:8000/index.html"

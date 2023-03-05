@@ -122,7 +122,6 @@ func New(conf *config.Config) (*Api, error) {
     user, _ := client.GetUser(conf.Global.Security.AdminUser)
     user.Id = conf.Global.Security.AdminUser
     user.Password = getHash(conf.Global.Security.AdminPassword)
-    user.FullName = conf.Global.Security.AdminUser
 
     if err := client.SaveUser(user); err != nil {
         return &Api{}, err

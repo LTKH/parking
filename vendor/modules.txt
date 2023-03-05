@@ -139,6 +139,9 @@ github.com/sergi/go-diff/diffmatchpatch
 # github.com/skeema/knownhosts v1.1.0
 ## explicit; go 1.17
 github.com/skeema/knownhosts
+# github.com/webview/webview v0.0.0-20230210061304-7b40e46d97e9
+## explicit; go 1.13
+github.com/webview/webview
 # github.com/xanzy/ssh-agent v0.3.3
 ## explicit; go 1.16
 github.com/xanzy/ssh-agent
