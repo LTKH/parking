@@ -10,7 +10,7 @@
                         <div class="row">
 
                             <div class="col-sm-12">
-                                <table id="myTable" data-height="1000" data-pagination-parts="pageInfo" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
+                                <table id="userTable" data-height="1000" data-pagination-parts="pageInfo" data-show-print="true" data-buttons="buttons" class="table table-responsive-sm table-sm table-hover">
                                     <thead></thead>
                                 </table>
                             </div>
@@ -86,7 +86,7 @@
         $.ajax({
             url: url,
             method: method,
-            data: JSON.stringify(data)
+            data: data
         }).done(function(jsn) {
             if (url == '/api/v1/main' && method == 'GET'){
                 $("#myModal select[name='idOrg']").empty();
@@ -98,7 +98,10 @@
                 });
             }
             if (url == '/api/v1/users' && method == 'GET'){
-                $('#myTable').bootstrapTable('load', jsn.data);
+                console.log(url);
+                //console.log(jsn.data);
+                //$('#userTable').bootstrapTable('load', jsn.data);
+                $('#userTable').bootstrapTable('load', jsn.data);
             }
             if (url == '/api/v1/users' && method == 'POST'){
                 $('#myModal').modal('hide');
@@ -161,19 +164,19 @@
                 'address':   $('#myModal input[name="address"]').val(),
             };
 
-            request("/api/v1/users", "POST", row);
+            request("/api/v1/users", "POST", JSON.stringify(row));
         });
 
-        $('#myTable').bootstrapTable({
+        $('#userTable').bootstrapTable({
             pagination: true,
             classes: "table table-responsive-sd table-sd",
             pageSize: 1000,
-            height: 900,
+            height: 800,
             columns: [
                 { title: "Логин", field: "login", width: 100 },
                 { title: "ФИО", field: "fullName", width: 250 },
                 { title: "Адрес", field: "address" },
-                { title: "Телефон", field: "telephone" }
+                { title: "Телефон", field: "telephone" },
             ],
             contextMenu: '#context-menu-table',
             onContextMenuItem: function(row, e){
@@ -187,7 +190,7 @@
                     $('#myModal').modal('show');
                 }
                 if(e.data("item") == "delete"){
-                    request("/api/v1/users", "DELETE", { id: row.login });
+                    request("/api/v1/users", "DELETE", JSON.stringify({ id: row.login }));
                 }
             }
         });

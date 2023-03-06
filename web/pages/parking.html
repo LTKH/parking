@@ -279,7 +279,6 @@
                 });
             }
             if (url == "/api/v1/check" && method == 'GET'){
-                //alert(JSON.stringify(jsn.data));
                 printCheck(jsn);
             }
             if (url == "/api/v1/parking" && method == 'POST'){
@@ -359,6 +358,7 @@
             } else {
                 $("#parking-form").removeClass('was-validated');
             }
+            
 
             var price = $("#parking-form select[name='price']").val().split('|');
             var row = {
@@ -530,6 +530,7 @@
             format:'d.m.Y H:i'
         });
 
+        /*
         $('#parking-form input[id="search"]').keyup(function(){
             $('#parking').bootstrapTable('filterBy', {}, {
                 'filterAlgorithm': (row, filters) => {
@@ -551,5 +552,6 @@
                 }
             });
         });
+        */
     });
 </script>
