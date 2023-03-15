@@ -19,10 +19,16 @@ jobs:
           go-version: 1.20.1
       - name: Parking build 64
         run: |
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o parking.exe parking.go
+          set GOOS=windows 
+          set GOARCH=amd64 
+          set CGO_ENABLED=1 
+          go build -o parking.exe parking.go
       - name: Parking build 32
         run: |
-          GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -o parking32.exe parking.go
+          set GOOS=windows 
+          set GOARCH=386 
+          set CGO_ENABLED=1 
+          go build -o parking32.exe parking.go
       - name: Create zip archive
         uses: vimtor/action-zip@v1
         with:
