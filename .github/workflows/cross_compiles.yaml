@@ -17,18 +17,24 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.20.1
-      - name: Parking build
+      - name: Parking build 64
         run: |
-          go build -o parking.exe parking.go
-      #- name: Service build
-      #  run: |
-      #    go build -o parking64.exe parking64.go
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o parking.exe parking.go
       - name: Create zip archive
         uses: vimtor/action-zip@v1
         with:
           files: parking.exe parking.yml web
           recursive: false
           dest: parking-${{ github.ref_name }}_windows_amd64.zip
+      - name: Parking build 32
+        run: |
+          GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -o parking386.exe parking.go
+      - name: Create zip archive
+        uses: vimtor/action-zip@v1
+        with:
+          files: parking386.exe parking.yml web
+          recursive: false
+          dest: parking-${{ github.ref_name }}_windows_386.zip
       #- name: GCC multilib
       #  run: |
       #    sudo apt-get install gcc-mingw-w64
@@ -51,7 +57,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
+      - name: Upload Release Asset 64
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
@@ -60,5 +66,15 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./parking-${{ github.ref_name }}_windows_amd64.zip
           asset_name: parking-${{ github.ref_name }}_windows_amd64.zip
+          asset_content_type: application/zip
+      - name: Upload Release Asset 32
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./parking-${{ github.ref_name }}_windows_386.zip
+          asset_name: parking-${{ github.ref_name }}_windows_386.zip
           asset_content_type: application/zip
 
