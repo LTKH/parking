@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-go@v3
       - name: Golang build
         run: |
-          GOOS=windows GOARCH=amd64 go build -o parking.exe parking.go
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o parking.exe parking.go
           zip -r parking-${{ github.ref_name }}_windows.zip web parking.exe parking.yml
       - name: Create Release
         id: create_release
