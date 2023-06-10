@@ -3,9 +3,13 @@ package main
 import (
     "os"
     "log"
+    "fmt"
     "flag"
+    "time"
+    "runtime"
+    "os/exec"
     "net/http"
-    "github.com/webview/webview"
+    //"github.com/webview/webview"
     "gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
     "github.com/ltkh/parking/internal/api/v1"
@@ -14,10 +18,28 @@ import (
 
 var (
     cfFile  = flag.String("config.file", "parking.yml", "config file")
-    lgFile  = flag.String("log.file", "parking.log", "log file")
+    lgFile  = flag.String("log.file", "", "log file")
     webDir  = flag.String("web.dir", "web", "web directory")
     mdbFile = flag.String("mdb.file", "", "mdb file (for migration)")
 )
+
+func openBrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+        case "linux":
+            err = exec.Command("xdg-open", url).Start()
+        case "windows":
+            err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+        case "darwin":
+            err = exec.Command("open", url).Start()
+        default:
+            err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		log.Fatal("[error] %v", err)
+	}
+}
 
 func main() {
     // Command-line flag parsing
@@ -81,10 +103,18 @@ func main() {
         }
     }()
 
-    w := webview.New(false)
-    defer w.Destroy()
-    w.SetTitle("Parking")
-    w.SetSize(cfg.Window.Width, cfg.Window.Height, webview.HintNone)
-    w.Navigate(cfg.Window.Navigate)
-    w.Run()
+    //w := webview.New(false)
+    //defer w.Destroy()
+    //w.SetTitle("Parking")
+    //w.SetSize(cfg.Window.Width, cfg.Window.Height, webview.HintNone)
+    //w.Navigate(cfg.Window.Navigate)
+    //w.Run()
+
+    openBrowser(cfg.Window.Navigate)
+
+    // Daemon mode
+    for {
+        time.Sleep(600 * time.Second)
+    }
+
 }

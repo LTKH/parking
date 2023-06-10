@@ -1,5 +1,5 @@
 global:
-  listen_address: "127.0.0.1:8000"
+  listen_address: "127.0.0.1:8300"
   security:
     admin_user:     "admin"
     admin_password: "111222333"
@@ -9,6 +9,6 @@ db:
   conn_string:      "parking.db"
 
 window:
-  width: 1000
-  height: 600
-  navigate: "http://localhost:8000/index.html"
+  #width: 1000
+  #height: 600
+  navigate: "http://localhost:8300/index.html"

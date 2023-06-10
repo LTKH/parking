@@ -23,16 +23,10 @@ jobs:
           set GOARCH=amd64 
           set CGO_ENABLED=1 
           go build -o parking.exe parking.go
-      - name: Parking build 32
-        run: |
-          set GOOS=windows 
-          set GOARCH=386 
-          set CGO_ENABLED=1 
-          go build -o parking32.exe parking.go
       - name: Create zip archive
         uses: vimtor/action-zip@v1
         with:
-          files: parking.exe parking32.exe parking.yml web
+          files: parking.exe parking.yml web
           recursive: false
           dest: parking-${{ github.ref_name }}_windows.zip
       #- name: GCC multilib
