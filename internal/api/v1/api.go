@@ -14,22 +14,24 @@ import (
     "encoding/hex"
     "encoding/json"
     "html/template"
-    "github.com/gorilla/websocket"
-    "github.com/go-git/go-git/v5"
-    "github.com/go-git/go-git/v5/storage/memory"
-    "github.com/go-git/go-billy/v5"
-    "github.com/go-git/go-billy/v5/memfs"
+    //"github.com/gorilla/websocket"
+    //"github.com/go-git/go-git/v5"
+    //"github.com/go-git/go-git/v5/storage/memory"
+    //"github.com/go-git/go-billy/v5"
+    //"github.com/go-git/go-billy/v5/memfs"
     "github.com/ltkh/parking/internal/db"
     "github.com/ltkh/parking/internal/config"
 )
 
 var (
+    /*
     wsout = make(chan string, 1000)
     upgrader = websocket.Upgrader{
         ReadBufferSize:  1024,
         WriteBufferSize: 1024,
         CheckOrigin:     func(r *http.Request) bool { return true },
     }
+    */
 )
 
 type Api struct {
@@ -134,6 +136,7 @@ func New(conf *config.Config) (*Api, error) {
     return &Api{conf: conf, db: &client}, nil
 }
 
+/*
 func getFiles(fs billy.Filesystem, path string) ([]string, error) {
     var files []string
 
@@ -188,8 +191,6 @@ func updateFiles() {
 
     wsout <- "finished"
 
-    /*
-
     files, err := fs.ReadDir("web")
     if err != nil {
         wsout <- err.Error()
@@ -201,7 +202,6 @@ func updateFiles() {
         wsout <- "copy to web/"+f.Name()
         //io.Copy(os.Stdout, changelog)
     }
-    */
 
     //ref, err := r.Head()
 
@@ -215,6 +215,7 @@ func updateFiles() {
 
     //log.Printf("%v", history)
 }
+*/
 
 func (api *Api) ApiLogin(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
@@ -264,6 +265,7 @@ func (api *Api) ApiLogin(w http.ResponseWriter, r *http.Request) {
     w.Write(encodeResp(&Resp{Status:"error", Error:"Login or password is incorrect"}))
 }
 
+/*
 func (api *Api) WsEndpoint(w http.ResponseWriter, r *http.Request) {
 
     ws, err := upgrader.Upgrade(w, r, nil)
@@ -300,6 +302,7 @@ func (api *Api) ApiUpdate(w http.ResponseWriter, r *http.Request) {
     updateFiles()
     w.WriteHeader(204)
 }
+*/
 
 func (api *Api) ApiObjects(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")

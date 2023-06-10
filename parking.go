@@ -81,8 +81,8 @@ func main() {
     }
 
     http.HandleFunc("/api/v1/login", apiV1.ApiLogin)
-    http.HandleFunc("/api/v1/ws", apiV1.WsEndpoint)
-    http.HandleFunc("/api/v1/update", apiV1.ApiUpdate)
+    //http.HandleFunc("/api/v1/ws", apiV1.WsEndpoint)
+    //http.HandleFunc("/api/v1/update", apiV1.ApiUpdate)
     http.HandleFunc("/api/v1/cars", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/owners", apiV1.ApiObjects)
     http.HandleFunc("/api/v1/places", apiV1.ApiObjects)
