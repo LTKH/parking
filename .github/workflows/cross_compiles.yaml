@@ -8,55 +8,33 @@ on:
 jobs:
   build:
     name: Upload Release Asset
-    #runs-on: ubuntu-latest
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v3
-        with:
-          go-version: 1.20.1
-      - name: Parking build
+      - name: Golang build
         run: |
-          go build -o parking.exe parking.go
-      - name: Create zip archive
-        uses: vimtor/action-zip@v1
+          GOOS=windows GOARCH=amd64 go build -o parking.exe parking.go
+          zip -r parking-${{ github.ref_name }}_windows.zip web parking.exe parking.yml
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: parking.exe parking.yml web
-          recursive: false
-          dest: parking-${{ github.ref_name }}_windows.zip
-      #- name: GCC multilib
-      #  run: |
-      #    sudo apt-get install gcc-mingw-w64
-      #- name: Parking build
-      #  run: |
-      #    GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking64.exe parking.go
-      #- name: Webview build
-      #  run: |
-      #    GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o parking.exe webview.go
-      #- name: Create zip archive
-      #  run: |
-      #    zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe web parking.yml
-      
-      #- name: Create Release
-      #  id: create_release
-      #  uses: actions/create-release@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    tag_name: ${{ github.ref }}
-      #    release_name: Release ${{ github.ref }}
-      #    draft: false
-      #    prerelease: false
-      - name: Upload Release Asset 64
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./parking-${{ github.ref_name }}_windows.zip
-          asset_name: parking-${{ github.ref_name }}_windows.zip
+          asset_path: ./parking-${{ github.ref_name }}_windows_amd64.zip
+          asset_name: parking-${{ github.ref_name }}_windows_amd64.zip
           asset_content_type: application/zip
-
