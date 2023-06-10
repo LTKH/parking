@@ -17,11 +17,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.20.1
-      - name: Parking build 64
+      - name: Parking build
         run: |
-          set GOOS=windows 
-          set GOARCH=amd64 
-          set CGO_ENABLED=1 
           go build -o parking.exe parking.go
       - name: Create zip archive
         uses: vimtor/action-zip@v1
