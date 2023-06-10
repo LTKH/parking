@@ -38,16 +38,17 @@ jobs:
       #- name: Create zip archive
       #  run: |
       #    zip -r parking-${{ github.ref_name }}_windows_amd64.zip parking64.exe web parking.yml
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+      
+      #- name: Create Release
+      #  id: create_release
+      #  uses: actions/create-release@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    tag_name: ${{ github.ref }}
+      #    release_name: Release ${{ github.ref }}
+      #    draft: false
+      #    prerelease: false
       - name: Upload Release Asset 64
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
