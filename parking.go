@@ -9,6 +9,7 @@ import (
     //"runtime"
     //"os/exec"
     "net/http"
+    "github.com/pkg/browser"
     //"github.com/webview/webview"
     "gopkg.in/natefinch/lumberjack.v2"
     "github.com/ltkh/parking/internal/config"
@@ -113,6 +114,7 @@ func main() {
     //w.Run()
 
     //openBrowser(cfg.Window.Navigate)
+    browser.OpenURL(cfg.Window.Navigate)
 
     // Daemon mode
     for {
