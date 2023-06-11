@@ -3,11 +3,11 @@ package main
 import (
     "os"
     "log"
-    "fmt"
+    //"fmt"
     "flag"
     "time"
-    "runtime"
-    "os/exec"
+    //"runtime"
+    //"os/exec"
     "net/http"
     //"github.com/webview/webview"
     "gopkg.in/natefinch/lumberjack.v2"
@@ -23,6 +23,7 @@ var (
     mdbFile = flag.String("mdb.file", "", "mdb file (for migration)")
 )
 
+/*
 func openBrowser(url string) {
 	var err error
 
@@ -40,6 +41,7 @@ func openBrowser(url string) {
 		log.Fatal("[error] %v", err)
 	}
 }
+*/
 
 func main() {
     // Command-line flag parsing
@@ -110,7 +112,7 @@ func main() {
     //w.Navigate(cfg.Window.Navigate)
     //w.Run()
 
-    openBrowser(cfg.Window.Navigate)
+    //openBrowser(cfg.Window.Navigate)
 
     // Daemon mode
     for {
